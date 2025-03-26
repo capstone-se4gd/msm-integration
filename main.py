@@ -73,7 +73,3 @@ def get_product_data(product_slug):
         return jsonify(cleaned_product), 200
     else:
         return jsonify({"error": "Product data not found"}), 404
-
-# Start the Flask app
-if __name__ == '__main__':
-    app.run(debug=True)
