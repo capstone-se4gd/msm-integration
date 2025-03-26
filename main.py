@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 import requests
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
@@ -73,3 +74,7 @@ def get_product_data(product_slug):
         return jsonify(cleaned_product), 200
     else:
         return jsonify({"error": "Product data not found"}), 404
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))  # Default to 10000 if PORT is not set
+    app.run(host="0.0.0.0", port=port)
