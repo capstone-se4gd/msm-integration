@@ -22,7 +22,7 @@ ACTIVITY_MAPPING = {
 
 # Function to fetch data from the API endpoint
 def fetch_data(product_slug):
-    url = f"https://msm-integration.onrender.com/api/products/{product_slug}"
+    url = f"http://194.37.81.247:8000/api/products/{product_slug}"
     response = requests.get(url)
     if response.status_code == 200:
         return response.json()
