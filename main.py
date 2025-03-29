@@ -35,62 +35,50 @@ def transform_data(input_json):
     if not input_json:
         return {}
     
-    timestamp = input_json.get("timestamp", datetime.utcnow().isoformat())
-
+    timestamp = datetime.utcnow().isoformat()
+    
+    product_id = input_json.get("product_id", "Unknown")
+    manufacturer_name = input_json.get("manufacturer", {}).get("name", "Unknown")
+    
     # Extract product emissions, energy, and water into one list
     product_emissions = []
     
     for metric in input_json.get("sustainability_metrics", []):
-        if metric["name"] in ["Scope 1", "Scope 2", "Scope 3"]:
-            product_emissions.append({
-                "scope": metric["name"],
-                "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
-                "activity": ACTIVITY_MAPPING.get(metric["name"], "General"),
-                "value": metric["value"],
-                "unit": metric["unit"],
-                "timestamp": timestamp,
-                "source": "Product"
-            })
-        elif metric["name"] in ["Energy Usage", "Water Consumption"]:
-            product_emissions.append({
-                "scope": metric["name"],
-                "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
-                "activity": "General",
-                "value": metric["value"],
-                "unit": metric["unit"],
-                "timestamp": timestamp,
-                "source": "Product"
-            })
-
+        product_emissions.append({
+            "scope": metric["name"],
+            "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
+            "activity": ACTIVITY_MAPPING.get(metric["name"], "General"),
+            "value": metric["value"],
+            "unit": metric["unit"],
+            "timestamp": timestamp,
+            "source": "Product",
+            "product_id": product_id,
+            "manufacturer_name": manufacturer_name
+        })
+    
     # Extract subpart emissions
     subpart_emissions = []
     
     for subpart in input_json.get("subparts", []):
+        subpart_id = subpart.get("subpart_id", "Unknown")
+        subpart_name = subpart.get("name", "Unknown")
+        subpart_manufacturer_name = subpart.get("manufacturer", {}).get("name", "Unknown")
+        
         for metric in subpart.get("sustainability_metrics", []):
-            if metric["name"] in ["Scope 1", "Scope 2", "Scope 3"]:
-                subpart_emissions.append({
-                    "scope": metric["name"],
-                    "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
-                    "activity": ACTIVITY_MAPPING.get(metric["name"], "Subpart Emission"),
-                    "value": metric["value"],
-                    "unit": metric["unit"],
-                    "timestamp": timestamp,
-                    "source": "Subpart",
-                    "subpart_name": subpart.get("subpart_name", "Unknown")
-                })
-            elif metric["name"] in ["Energy Usage", "Water Consumption"]:
-                subpart_emissions.append({
-                    "scope": metric["name"],
-                    "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
-                    "activity": "Subpart Emission",
-                    "value": metric["value"],
-                    "unit": metric["unit"],
-                    "timestamp": timestamp,
-                    "source": "Subpart",
-                    "subpart_name": subpart.get("subpart_name", "Unknown")
-                })
-
-    # Build final structured output without separate energy/water sections
+            subpart_emissions.append({
+                "scope": metric["name"],
+                "category": CATEGORY_MAPPING.get(metric["name"], "Other"),
+                "activity": ACTIVITY_MAPPING.get(metric["name"], "Subpart Emission"),
+                "value": metric["value"],
+                "unit": metric["unit"],
+                "timestamp": timestamp,
+                "source": "Subpart",
+                "subpart_id": subpart_id,
+                "subpart_name": subpart_name,
+                "manufacturer_name": subpart_manufacturer_name
+            })
+    
+    # Build final structured output
     return {
         "product_emissions": product_emissions,
         "subpart_emissions": subpart_emissions
@@ -108,5 +96,5 @@ def get_transformed_data(product_slug):
         return jsonify({"error": "Product data not found"}), 404
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
+    port = int(os.environ.get("PORT", 10000))  # Default to 5000 if PORT is not set
     app.run(host="0.0.0.0", port=port)
