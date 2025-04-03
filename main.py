@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 import requests
 from datetime import datetime
 import os
+import json
 
 app = Flask(__name__)
 
@@ -83,6 +84,13 @@ def transform_data(input_json):
         "product_emissions": product_emissions,
         "subpart_emissions": subpart_emissions
     }
+def load_json_from_file(filename):
+    if not os.path.exists(filename):
+        return {"error": "File not found"}
+    
+    with open(filename, "r", encoding="utf-8") as file:
+        data = json.load(file)
+    return data
 
 # Define the endpoint
 @app.route('/api/products/<product_slug>', methods=['GET'])
@@ -94,6 +102,11 @@ def get_transformed_data(product_slug):
         return jsonify(transformed_data), 200
     else:
         return jsonify({"error": "Product data not found"}), 404
+    
+@app.route('/api/products/test-data', methods=['GET'])
+def get_json_data():
+    json_data = load_json_from_file("test-data.json")
+    return jsonify(json_data)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))  # Default to 5000 if PORT is not set
