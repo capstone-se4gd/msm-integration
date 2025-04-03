@@ -1,0 +1,121 @@
+{
+  "id": "67ee7e9a8a456b796681cb01",
+  "record": [
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab30",
+      "product_name": "Wood Transformation",
+      "category": "Scope 1",
+      "sub-category": "Stationary Combustion",
+      "company": "Company Provider 1",
+      "unit": "kg",
+      "value": 100,
+      "timestamp": "2025-03-02T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab31",
+      "product_name": "Steel Transformation",
+      "category": "Scope 1",
+      "sub-category": "Stationary Combustion",
+      "company": "Company Provider 2",
+      "unit": "kg",
+      "value": 150,
+      "timestamp": "2025-03-10T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab32",
+      "product_name": "Electricity",
+      "category": "Scope 2",
+      "sub-category": "Purchased Electricity",
+      "company": "Electricity Provider 1",
+      "unit": "kg",
+      "value": 40,
+      "timestamp": "2025-03-20T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab33",
+      "product_name": "Electricity",
+      "category": "Scope 2",
+      "sub-category": "Purchased Electricity",
+      "company": "Electricity Provider 2",
+      "unit": "kg",
+      "value": 70,
+      "timestamp": "2025-03-25T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab34",
+      "product_name": "Packages",
+      "category": "Scope 3",
+      "sub-category": "Purchased Goods/Services",
+      "company": "Packages Provider 1",
+      "unit": "kg",
+      "value": 15,
+      "timestamp": "2025-03-10T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab35",
+      "product_name": "Wood",
+      "category": "Scope 3",
+      "sub-category": "Purchased Goods/Services",
+      "company": "Wood Provider 1",
+      "unit": "kg",
+      "value": 20,
+      "timestamp": "2025-03-14T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab37",
+      "product_name": "Steel",
+      "category": "Scope 3",
+      "sub-category": "Purchased Goods/Services",
+      "company": "Steel Provider 1",
+      "unit": "kg",
+      "value": 50,
+      "timestamp": "2025-03-15T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab37",
+      "product_name": "Water",
+      "category": "Water",
+      "sub-category": "Water Quantities",
+      "company": "Water Provider 1",
+      "unit": "cubic metres",
+      "value": 5,
+      "timestamp": "2025-03-27T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab37",
+      "product_name": "Water",
+      "category": "Water",
+      "sub-category": "Water Quantities",
+      "company": "Water Provider 2",
+      "unit": "cubic metres",
+      "value": 5,
+      "timestamp": "2025-03-30T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab32",
+      "product_name": "Electricity",
+      "category": "Energy",
+      "sub-category": "Purchased Electricity",
+      "company": "Electricity Provider 1",
+      "unit": "MWh",
+      "value": 75,
+      "timestamp": "2025-03-20T07:48:43.440546"
+    },
+    {
+      "product_id": "d4735e3a265e16eee03f59718b9b5d03019c07d8b6c51f90da3a666eec13ab33",
+      "product_name": "Electricity",
+      "category": "Energy",
+      "sub-category": "Purchased Electricity",
+      "company": "Electricity Provider 2",
+      "unit": "MWh",
+      "value": 5,
+      "timestamp": "2025-03-25T07:48:43.440546"
+    }
+  ],
+  "metadata": {
+    "name": "SUSTAINABILITY",
+    "readCountRemaining": 77,
+    "timeToExpire": 84538,
+    "createdAt": "2025-04-03T12:27:06.959Z"
+  }
+}
