@@ -1,0 +1,5 @@
+Stationary combustion (Emissions) -> Scope 1(json)
+Purchased electricity (Emissions) -> scope 2 (json)
+Purchased goods and services (Emissions) -> Scope 3(json)
+Purchased electricity (Energy) -> Energy Usage (json)
+Water quantities -> Water consumption (json)
