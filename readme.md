@@ -62,6 +62,12 @@ The server will start on `http://localhost:5000`.
   - Headers: `Authorization: Bearer YOUR_TOKEN`
   - Request: `multipart/form-data` with XML files in the `files` field
   - Response: `{ "message": "Processing started", "transaction_id": "..." }`
+    #### Example: 
+    ``` 
+    curl -X 'POST'   'http://127.0.0.1:8000/process-invoices' -F "files=@sample.xml"
+
+    {"message":"Processing started","transaction_id":"d9b75682-6228-4a9e-9ac1-fd6cce8e2033"} 
+    ``` 
 
 - `GET /transaction/<transaction_id>`: Get transaction results
   - Headers: `Authorization: Bearer YOUR_TOKEN`
