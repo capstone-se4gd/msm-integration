@@ -43,12 +43,12 @@
 
     <InvoiceRow>
         <ArticleIdentifier>12345</ArticleIdentifier>
-        <ArticleName>Consulting Service</ArticleName>
-        <DeliveredQuantity QuantityUnitCode="HUR">10</DeliveredQuantity>
-        <UnitPriceAmount>100.00</UnitPriceAmount>
+        <ArticleName>Wood</ArticleName>
+        <DeliveredQuantity>10</DeliveredQuantity>
+        <UnitPriceAmount>50.00</UnitPriceAmount>
         <RowVatRatePercent>24</RowVatRatePercent>
-        <RowAmount>1000.00</RowAmount>
-        <Other>https://www.example.com/details</Other>
+        <RowAmount>10.00</RowAmount>
+        <Other>http://localhost:8000/api/products/wood-yqrh7</Other>
     </InvoiceRow>
 
     <PaymentInstructionDetails>
