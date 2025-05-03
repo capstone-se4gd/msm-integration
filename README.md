@@ -17,7 +17,23 @@ This project implements a Flask middleware with authentication for processing in
 - Python 3.7+
 - pip (Python package installer)
 
-### Installation
+### Installation with docker 
+
+1. Clone this repository
+2. Build the image:
+```bash
+docker build -t flask-app .
+```
+3. Run the image:
+```bash
+docker run -p 5000:5000 flask-app
+```
+Access the app in: 
+```http://localhost:5000 ```
+
+Note: This will create the database and run the flask app 
+
+### Installation with python
 
 1. Clone this repository
 2. Install dependencies:
