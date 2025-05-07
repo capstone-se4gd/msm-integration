@@ -6,6 +6,7 @@ import uuid
 import hashlib
 from functools import wraps
 from flask import request, jsonify, g
+from flask_restx import abort
 
 # Secret key for JWT - in production, use environment variables
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-for-dev')
@@ -60,12 +61,12 @@ def token_required(f):
         token = None
         auth_header = request.headers.get('Authorization')
         
-        if auth_header:
-            if auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
+        # Extract token from header
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header.split(' ')[1]
         
         if not token:
-            return jsonify({'message': 'Token is missing!', 'authenticated': False}), 401
+            abort(401, 'Token is missing')
         
         try:
             # Decode the token
@@ -76,15 +77,17 @@ def token_required(f):
             current_user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
             
             if not current_user:
-                return jsonify({'message': 'User not found!', 'authenticated': False}), 401
+                abort(401, 'User not found')
                 
         except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token has expired!', 'authenticated': False}), 401
+            abort(401, 'Token has expired')
         except jwt.InvalidTokenError:
-            return jsonify({'message': 'Invalid token!', 'authenticated': False}), 401
-            
+            abort(401, 'Invalid token')
+        except Exception as e:
+            abort(500, f'Authentication error: {str(e)}')
+        
         # Pass the current user to the route
-        return f(current_user, *args, **kwargs)
+        return f(*args, **kwargs, current_user=current_user)
     
     return decorated
 
