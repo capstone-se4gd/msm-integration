@@ -54,6 +54,29 @@ def setup_database():
         FOREIGN KEY (product_id) REFERENCES products (id)
     )
     ''')
+
+    # Create invoices table
+    cursor.execute('''
+    CREATE TABLE invoices (
+        id TEXT PRIMARY KEY,
+        batch_id TEXT NOT NULL,
+        facility TEXT NOT NULL,
+        organizational_unit TEXT NOT NULL,
+        supplier_url TEXT NOT NULL,
+        sub_category TEXT NOT NULL,
+        invoice_number TEXT,
+        invoice_date TEXT,
+        emissions_are_per_unit TEXT,
+        quantity_needed_per_unit TEXT,
+        units_bought REAL,
+        total_amount REAL,
+        currency TEXT,
+        transaction_start_date TEXT,
+        transaction_end_date TEXT,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (batch_id) REFERENCES batches (id)
+    )
+    ''')
     
     # Create transactions table for storing invoice processing results
     cursor.execute('''
@@ -77,28 +100,10 @@ def setup_database():
     
     conn.commit()
     
-    # Create some sample data for testing
-    # Add a sample product
-    product_id = str(uuid.uuid4())
-    cursor.execute('''
-    INSERT INTO products (id, name, created_at)
-    VALUES (?, ?, ?)
-    ''', (product_id, 'Sample Product', created_at))
-    
-    # Add a sample batch
-    batch_id = str(uuid.uuid4())
-    cursor.execute('''
-    INSERT INTO batches (id, product_id, information_url, created_at)
-    VALUES (?, ?, ?, ?)
-    ''', (batch_id, product_id, 'https://api.example.com/sustainability/123', created_at))
-    
-    conn.commit()
     conn.close()
     
     print("Database setup complete!")
-    print(f"Admin user created with username: 'admin' and password: 'admin123'")
-    print(f"Sample product created with ID: {product_id}")
-    print(f"Sample batch created with ID: {batch_id}")
+    print(f"Admin user created with email: 'admin@example.com' and password: 'admin123'")
 
 if __name__ == "__main__":
     setup_database()
