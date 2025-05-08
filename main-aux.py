@@ -730,8 +730,8 @@ class Emissions(Resource):
     @emissions_ns.response(404, 'Emissions not found')
     @emissions_ns.response(401, 'Unauthorized')
     @emissions_ns.response(500, 'Internal Server Error')
-    @token_required
-    def get(self, current_user):
+    # @token_required
+    def get(self):
         """
         Endpoint to retrieve emissions data organized by suppliers
         Returns a structured response with supplier details and their emissions data
@@ -788,7 +788,7 @@ class Emissions(Resource):
                                 unitsBought = float(supplier.get('unitsBought', 1))
                                 if 'sustainability_metrics' in supplier_data:
                                     for metric in supplier_data['sustainability_metrics']:
-                                        category = subcategories.get(supplier_data.get('subCategory'), 'Unknown')
+                                        category = subcategories.get(metric.get('name'), 'Unknown')
                                         if category in ['Scope 1', 'Scope 2', 'Scope 3']:
                                             emissions += metric.get('value', 0) * (quantityNeededPerUnit if metricsArePerUnit == 'YES' else quantityNeededPerUnit / unitsBought)
                                         elif category == 'Water':
@@ -796,7 +796,8 @@ class Emissions(Resource):
                                         elif category == 'Energy':
                                             energy_consumption += metric.get('value', 0) * (quantityNeededPerUnit if metricsArePerUnit == 'YES' else quantityNeededPerUnit / unitsBought)
 
-                                supplier_emissions.append({
+                                print(f"Emissions calculated for {supplier['supplier_url']}: {emissions} kg CO2E, Water: {water_consumption} m3, Energy: {energy_consumption} kWh")
+                                emissions_template = {
                                     'product_id': supplier_data.get('product_id'),
                                     'name': supplier_data.get('name'),
                                     'product': supplier_data.get('name'),
@@ -817,7 +818,33 @@ class Emissions(Resource):
                                     'water_transaction_type': supplier_data.get('water_transaction_type', ''),
                                     'organizational_unit': supplier_data.get('organizational_unit', ''),
                                     'facility': supplier_data.get('facility', ''),
-                                })
+                                }
+                                # Append to the emissions list
+                                if emissions > 0:
+                                    emissions_template['quantity'] = emissions
+                                    emissions_template['quantity_unit'] = 'kg'
+                                    supplier_emissions.append(emissions_template)
+                                # Append water consumption if applicable
+                                if water_consumption > 0:
+                                    water_template = emissions_template.copy()
+                                    water_template['source'] = 'Water'
+                                    water_template['category'] = 'Water'
+                                    water_template['sub_category'] = 'Water Quantities'
+                                    water_template['quantity'] = water_consumption
+                                    water_template['quantity_unit'] = 'Cubic meters'
+                                    water_template['CO2E'] = 0
+                                    supplier_emissions.append(water_template)
+                                # Append energy consumption if applicable
+                                if energy_consumption > 0:
+                                    energy_template = emissions_template.copy()
+                                    energy_template['source'] = 'Energy'
+                                    energy_template['category'] = 'Energy'
+                                    energy_template['sub_category'] = 'Purchased Electricity (Energy)'
+                                    energy_template['quantity'] = energy_consumption
+                                    energy_template['quantity_unit'] = 'kWh'
+                                    energy_template['CO2E'] = 0
+                                    supplier_emissions.append(energy_template)
+
                     return supplier_emissions
                 except Exception as e:
                     print(f"Error processing batch suppliers: {str(e)}")
