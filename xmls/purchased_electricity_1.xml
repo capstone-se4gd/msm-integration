@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI55667789</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI98776655</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV03</MessageIdentifier>
+    <MessageTimeStamp>2025-04-30T12:00:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI33445566</SellerPartyIdentifier>
+    <SellerOrganisationName>Nordic Power Oy</SellerOrganisationName>
+    <SellerStreetName>Energy Park 7</SellerStreetName>
+    <SellerTownName>Espoo</SellerTownName>
+    <SellerPostCodeIdentifier>02200</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3584012345</SellerPhoneNumber>
+    <SellerEmailAddress>invoices@nordicpower.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI11223344</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV03</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-008</InvoiceNumber>
+    <InvoiceDate>2025-04-30</InvoiceDate>
+    <SellerReferenceIdentifier>EP-Apr25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>3000.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>720.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>3720.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>ELEC-550</ArticleIdentifier>
+    <ArticleName>Purchased Electricity</ArticleName>
+    <DeliveredQuantity>15000</DeliveredQuantity>
+    <UnitPriceAmount>0.20</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>3000.00</RowAmount>
+    <Other>https://example.com/products/electricity-kwh</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-008</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-05-30</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Nordic Power Oy</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI2233445500006677"/>
+    <CreditorBic>ESPOFIHH</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

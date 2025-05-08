@@ -3,19 +3,19 @@
     <MessageTransmissionDetails>
         <MessageSenderInterchangeID>FI12345678</MessageSenderInterchangeID>
         <MessageReceiverInterchangeID>FI87654321</MessageReceiverInterchangeID>
-        <MessageIdentifier>INV05</MessageIdentifier>
-        <MessageTimeStamp>2025-04-05T09:00:00</MessageTimeStamp>
+        <MessageIdentifier>INV01</MessageIdentifier>
+        <MessageTimeStamp>2025-04-29T09:00:00</MessageTimeStamp>
     </MessageTransmissionDetails>
 
     <SellerPartyDetails>
         <SellerPartyIdentifier>FI11223344</SellerPartyIdentifier>
-        <SellerOrganisationName>Example Seller Ltd</SellerOrganisationName>
-        <SellerStreetName>Example Street 1</SellerStreetName>
+        <SellerOrganisationName>Wood Seller Ltd</SellerOrganisationName>
+        <SellerStreetName>Wood Street 1</SellerStreetName>
         <SellerTownName>Helsinki</SellerTownName>
         <SellerPostCodeIdentifier>00100</SellerPostCodeIdentifier>
         <SellerCountryCode>FI</SellerCountryCode>
         <SellerPhoneNumber>+3581234567</SellerPhoneNumber>
-        <SellerEmailAddress>sales@example.com</SellerEmailAddress>
+        <SellerEmailAddress>sales@wood.com</SellerEmailAddress>
     </SellerPartyDetails>
 
     <BuyerPartyDetails>
@@ -30,24 +30,25 @@
     </BuyerPartyDetails>
 
     <InvoiceDetails>
-        <InvoiceTypeCode>INV05</InvoiceTypeCode>
-        <InvoiceNumber>INV-2025-005</InvoiceNumber>
-        <InvoiceDate>2025-04-05</InvoiceDate>
-        <SellerReferenceIdentifier>John Smith</SellerReferenceIdentifier>
-        <BuyerReferenceIdentifier>Jane Doe</BuyerReferenceIdentifier>
+        <InvoiceTypeCode>INV01</InvoiceTypeCode>
+        <InvoiceNumber>INV-2025-001</InvoiceNumber>
+        <InvoiceDate>2025-04-29</InvoiceDate>
+        <SellerReferenceIdentifier>Wood Seller</SellerReferenceIdentifier>
+        <BuyerReferenceIdentifier>Example Buyer</BuyerReferenceIdentifier>
         <CurrencyIdentifier>EUR</CurrencyIdentifier>
-        <InvoiceTotalVatExcludedAmount>500.00</InvoiceTotalVatExcludedAmount>
-        <InvoiceTotalVatAmount>100.00</InvoiceTotalVatAmount>
-        <InvoiceTotalVatIncludedAmount>600.00</InvoiceTotalVatIncludedAmount>
+        <InvoiceTotalVatExcludedAmount>1000.00</InvoiceTotalVatExcludedAmount>
+        <InvoiceTotalVatAmount>240.00</InvoiceTotalVatAmount>
+        <InvoiceTotalVatIncludedAmount>1240.00</InvoiceTotalVatIncludedAmount>
     </InvoiceDetails>
 
     <InvoiceRow>
-        <ArticleIdentifier>0</ArticleIdentifier>
-        <ArticleName>STATIONARY COMBUSTION</ArticleName>
-        <DeliveredQuantity>1</DeliveredQuantity>
-        <UnitPriceAmount>0.00</UnitPriceAmount>
-        <RowVatRatePercent>0</RowVatRatePercent>
-        <RowAmount>0.00</RowAmount>
+        <ArticleIdentifier>12345</ArticleIdentifier>
+        <ArticleName>Wood</ArticleName>
+        <DeliveredQuantity>10</DeliveredQuantity>
+        <UnitPriceAmount>50.00</UnitPriceAmount>
+        <RowVatRatePercent>24</RowVatRatePercent>
+        <RowAmount>10.00</RowAmount>
+        <Other>https://traceable-ledger-backend.onrender.com/api/products/wood-av0ls</Other>
     </InvoiceRow>
 
     <PaymentInstructionDetails>

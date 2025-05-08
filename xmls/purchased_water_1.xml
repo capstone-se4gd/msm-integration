@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI66778899</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI99887766</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV04</MessageIdentifier>
+    <MessageTimeStamp>2025-04-27T10:45:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI77889900</SellerPartyIdentifier>
+    <SellerOrganisationName>Vantaa Water Works</SellerOrganisationName>
+    <SellerStreetName>Water Park 2</SellerStreetName>
+    <SellerTownName>Vantaa</SellerTownName>
+    <SellerPostCodeIdentifier>01530</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3582912345</SellerPhoneNumber>
+    <SellerEmailAddress>clientservices@vantaawater.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI11223344</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV04</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-009</InvoiceNumber>
+    <InvoiceDate>2025-04-27</InvoiceDate>
+    <SellerReferenceIdentifier>VW-Apr25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>200.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>48.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>248.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>WAT-100</ArticleIdentifier>
+    <ArticleName>Water</ArticleName>
+    <DeliveredQuantity>50</DeliveredQuantity>
+    <UnitPriceAmount>4.00</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>200.00</RowAmount>
+    <Other>https://example.com/products/water-m3</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-009</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-05-27</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Vantaa Water Works</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI1122003300004455"/>
+    <CreditorBic>ESPOFIHH</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

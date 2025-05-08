@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI99001122</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI22110099</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV23</MessageIdentifier>
+    <MessageTimeStamp>2025-05-05T13:35:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI11009922</SellerPartyIdentifier>
+    <SellerOrganisationName>Finnish Grid Oy</SellerOrganisationName>
+    <SellerStreetName>Powerline 9</SellerStreetName>
+    <SellerTownName>Tampere</SellerTownName>
+    <SellerPostCodeIdentifier>33110</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3583412345</SellerPhoneNumber>
+    <SellerEmailAddress>billing@fingrid.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI99885566</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV23</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-013</InvoiceNumber>
+    <InvoiceDate>2025-05-05</InvoiceDate>
+    <SellerReferenceIdentifier>FG-Apr–May25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr–May25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>3200.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>768.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>3968.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>ELEC-600</ArticleIdentifier>
+    <ArticleName>Purchased Electricity</ArticleName>
+    <DeliveredQuantity>16000</DeliveredQuantity>
+    <UnitPriceAmount>0.20</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>3200.00</RowAmount>
+    <Other>https://example.com/products/electricity-16k</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-013</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-06-05</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Finnish Grid Oy</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI5566778800002233"/>
+    <CreditorBic>TREMFIPI</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

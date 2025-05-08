@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI33445566</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI66554433</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV02</MessageIdentifier>
+    <MessageTimeStamp>2025-04-28T14:15:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI22334455</SellerPartyIdentifier>
+    <SellerOrganisationName>Helsinki Heat Supply Ltd</SellerOrganisationName>
+    <SellerStreetName>District Energy Rd 3</SellerStreetName>
+    <SellerTownName>Helsinki</SellerTownName>
+    <SellerPostCodeIdentifier>00180</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3581234987</SellerPhoneNumber>
+    <SellerEmailAddress>billing@hheat.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI11223344</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV02</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-007</InvoiceNumber>
+    <InvoiceDate>2025-04-28</InvoiceDate>
+    <SellerReferenceIdentifier>HHeat-Apr25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>1200.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>288.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>1488.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>SH-1002</ArticleIdentifier>
+    <ArticleName>Purchased Heat</ArticleName>
+    <DeliveredQuantity>50</DeliveredQuantity>
+    <UnitPriceAmount>24.00</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>1200.00</RowAmount>
+    <Other>https://example.com/products/heat-mwh-50</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-007</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-05-28</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Helsinki Heat Supply Ltd</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI4033221100004567"/>
+    <CreditorBic>HELSFIHH</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

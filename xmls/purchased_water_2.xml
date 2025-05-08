@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI22330044</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI44003322</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV24</MessageIdentifier>
+    <MessageTimeStamp>2025-05-06T09:55:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI33442211</SellerPartyIdentifier>
+    <SellerOrganisationName>Tampere Water Ltd</SellerOrganisationName>
+    <SellerStreetName>Aqueduct 6</SellerStreetName>
+    <SellerTownName>Tampere</SellerTownName>
+    <SellerPostCodeIdentifier>33115</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3583322556</SellerPhoneNumber>
+    <SellerEmailAddress>contact@tamperewater.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI99885566</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV24</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-014</InvoiceNumber>
+    <InvoiceDate>2025-05-06</InvoiceDate>
+    <SellerReferenceIdentifier>TW-Apr–May25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr–May25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>220.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>52.80</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>272.80</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>WAT-200</ArticleIdentifier>
+    <ArticleName>Water</ArticleName>
+    <DeliveredQuantity>55</DeliveredQuantity>
+    <UnitPriceAmount>4.00</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>220.00</RowAmount>
+    <Other>https://example.com/products/water-55m3</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-014</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-06-06</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Tampere Water Ltd</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI0099887700006655"/>
+    <CreditorBic>TREMFIPI</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

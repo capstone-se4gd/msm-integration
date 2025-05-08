@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI44332211</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI11223456</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV06</MessageIdentifier>
+    <MessageTimeStamp>2025-05-02T07:45:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI33441122</SellerPartyIdentifier>
+    <SellerOrganisationName>GreenEnergy Internal</SellerOrganisationName>
+    <SellerStreetName>Boilerhouse 3</SellerStreetName>
+    <SellerTownName>Turku</SellerTownName>
+    <SellerPostCodeIdentifier>20100</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3582233445</SellerPhoneNumber>
+    <SellerEmailAddress>energy@greenint.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI99885566</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV06</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-010</InvoiceNumber>
+    <InvoiceDate>2025-05-02</InvoiceDate>
+    <SellerReferenceIdentifier>GE-Combustion-May</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-May</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>0.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>0.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>0.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>SC-0002</ArticleIdentifier>
+    <ArticleName>Stationary Combustion</ArticleName>
+    <DeliveredQuantity>1</DeliveredQuantity>
+    <UnitPriceAmount>0.00</UnitPriceAmount>
+    <RowVatRatePercent>0</RowVatRatePercent>
+    <RowAmount>0.00</RowAmount>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-010</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-11-02</PaymentDueDate>
+    <PaymentOverDueFinePercent>0.0</PaymentOverDueFinePercent>
+    <CreditorName>PackCo Oy</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI0833221100000099"/>
+    <CreditorBic>HELSFIHH</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

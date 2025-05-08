@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI44556677</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI77665544</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV01</MessageIdentifier>
+    <MessageTimeStamp>2025-04-29T09:00:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI55667788</SellerPartyIdentifier>
+    <SellerOrganisationName>Carbon Supplies Oy</SellerOrganisationName>
+    <SellerStreetName>Board Avenue 12</SellerStreetName>
+    <SellerTownName>Tampere</SellerTownName>
+    <SellerPostCodeIdentifier>33100</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3583212345</SellerPhoneNumber>
+    <SellerEmailAddress>sales@carbon.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI11223344</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV01</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-001</InvoiceNumber>
+    <InvoiceDate>2025-04-29</InvoiceDate>
+    <SellerReferenceIdentifier>PB-Order-789</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-PO-123</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>5000.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>1200.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>6200.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>CBN-7890</ArticleIdentifier>
+    <ArticleName>Carbon</ArticleName>
+    <DeliveredQuantity>2000</DeliveredQuantity>
+    <UnitPriceAmount>2.50</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>5000.00</RowAmount>
+    <Other>https://example.com/products/board-sheets</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-001</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-05-29</PaymentDueDate>
+    <PaymentOverDueFinePercent>10.0</PaymentOverDueFinePercent>
+    <CreditorName>PaperBoard Supplies Oy</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI6677889900001122"/>
+    <CreditorBic>TREMFIPI</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>

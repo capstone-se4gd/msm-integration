@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Finvoice Version="3.0"
+          xmlns="http://www.finvoice.fi/Finvoice"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.finvoice.fi/Finvoice Finvoice3.0.xsd">
+
+  <MessageTransmissionDetails>
+    <MessageSenderInterchangeID>FI55660011</MessageSenderInterchangeID>
+    <MessageReceiverInterchangeID>FI11006655</MessageReceiverInterchangeID>
+    <MessageIdentifier>INV22</MessageIdentifier>
+    <MessageTimeStamp>2025-05-03T15:20:00</MessageTimeStamp>
+  </MessageTransmissionDetails>
+
+  <SellerPartyDetails>
+    <SellerPartyIdentifier>FI66770022</SellerPartyIdentifier>
+    <SellerOrganisationName>Espoo Heating Co</SellerOrganisationName>
+    <SellerStreetName>District Heats 8</SellerStreetName>
+    <SellerTownName>Espoo</SellerTownName>
+    <SellerPostCodeIdentifier>02150</SellerPostCodeIdentifier>
+    <SellerCountryCode>FI</SellerCountryCode>
+    <SellerPhoneNumber>+3582211550</SellerPhoneNumber>
+    <SellerEmailAddress>info@espooheat.fi</SellerEmailAddress>
+  </SellerPartyDetails>
+
+  <BuyerPartyDetails>
+    <BuyerPartyIdentifier>FI99885566</BuyerPartyIdentifier>
+    <BuyerOrganisationName>PackCo Oy</BuyerOrganisationName>
+    <BuyerStreetName>Production Road 5</BuyerStreetName>
+    <BuyerTownName>Vantaa</BuyerTownName>
+    <BuyerPostCodeIdentifier>01510</BuyerPostCodeIdentifier>
+    <BuyerCountryCode>FI</BuyerCountryCode>
+    <BuyerPhoneNumber>+3582016789</BuyerPhoneNumber>
+    <BuyerEmailAddress>accounts@packco.fi</BuyerEmailAddress>
+  </BuyerPartyDetails>
+
+  <InvoiceDetails>
+    <InvoiceTypeCode>INV22</InvoiceTypeCode>
+    <InvoiceNumber>INV-2025-011</InvoiceNumber>
+    <InvoiceDate>2025-05-03</InvoiceDate>
+    <SellerReferenceIdentifier>EH-Apr-May25</SellerReferenceIdentifier>
+    <BuyerReferenceIdentifier>PackCo-Apr-May25</BuyerReferenceIdentifier>
+    <CurrencyIdentifier>EUR</CurrencyIdentifier>
+    <InvoiceTotalVatExcludedAmount>1400.00</InvoiceTotalVatExcludedAmount>
+    <InvoiceTotalVatAmount>336.00</InvoiceTotalVatAmount>
+    <InvoiceTotalVatIncludedAmount>1736.00</InvoiceTotalVatIncludedAmount>
+  </InvoiceDetails>
+
+  <InvoiceRow>
+    <ArticleIdentifier>SH-1003</ArticleIdentifier>
+    <ArticleName>Purchased Heat</ArticleName>
+    <DeliveredQuantity>60</DeliveredQuantity>
+    <UnitPriceAmount>23.33</UnitPriceAmount>
+    <RowVatRatePercent>24</RowVatRatePercent>
+    <RowAmount>1400.00</RowAmount>
+    <Other>https://example.com/products/heat-60mwh</Other>
+  </InvoiceRow>
+
+  <PaymentInstructionDetails>
+    <PaymentInstructionIdentifier>PI-2025-011</PaymentInstructionIdentifier>
+    <PaymentDueDate>2025-06-03</PaymentDueDate>
+    <PaymentOverDueFinePercent>5.0</PaymentOverDueFinePercent>
+    <CreditorName>Espoo Heating Co</CreditorName>
+    <CreditorAccountIdentifier IBAN="FI1234005500007788"/>
+    <CreditorBic>ESPOFIHH</CreditorBic>
+  </PaymentInstructionDetails>
+</Finvoice>
