@@ -102,3 +102,15 @@ def register_models(api):
         'organizational_unit': fields.String(description='Organizational unit'),
         'facility': fields.String(description='Facility')
     })
+      # Return models as a dictionary
+    return {
+        'transaction_response': transaction_response,
+        'transaction_detail': transaction_detail,
+        'batch_request': batch_request,
+        'batch_response': batch_response,
+        'product_detail': product_detail,
+        'product_list_item': product_list_item,
+        'sustainability_metric': sustainability_metric,
+        'emissions_model': emissions_model,
+        'invoice_model': invoice_model
+    }

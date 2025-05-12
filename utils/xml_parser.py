@@ -1,7 +1,7 @@
 # utils/xml_parser.py
 import xml.etree.ElementTree as ET
 import asyncio
-from helpers import fetch_url_data
+from utils.helpers import fetch_url_data
 
 def xml_to_json(xml_content):
     """Convert Finvoice XML content to JSON."""

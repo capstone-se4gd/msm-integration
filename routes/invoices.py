@@ -12,14 +12,15 @@ import asyncio
 from flask_restx import Api, Resource, fields, Namespace
 from concurrent.futures import ThreadPoolExecutor
 from flask import current_app
+from models import register_models
 
 invoice_ns = Namespace('invoices', description='Invoice processing operations')
-
+models = register_models(invoice_ns)
 # Endpoints with Flask-RESTx
 @invoice_ns.route('/process-invoices')
 class ProcessInvoices(Resource):
     @invoice_ns.doc('process_invoices')
-    @invoice_ns.response(202, 'Processing started', invoice_ns.models['transaction_response'])
+    @invoice_ns.response(202, 'Processing started', models['transaction_response'])
     @invoice_ns.response(400, 'Bad request')
     @invoice_ns.response(401, 'Unauthorized')
     @token_required
@@ -118,7 +119,7 @@ class ProcessInvoices(Resource):
 @invoice_ns.param('transaction_id', 'The transaction identifier')
 class Transaction(Resource):
     @invoice_ns.doc('get_transaction')
-    @invoice_ns.response(200, 'Success', invoice_ns.models['transaction_detail'] )
+    @invoice_ns.response(200, 'Success', models['transaction_detail'] )
     @invoice_ns.response(404, 'Transaction not found')
     @invoice_ns.response(401, 'Unauthorized')
     @token_required

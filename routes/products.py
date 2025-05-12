@@ -3,15 +3,17 @@ from auth import token_required
 from auth import query_db
 import asyncio
 import aiohttp
+from models import register_models
 
 product_ns = Namespace('products', description='Product management operations')
+models = register_models(product_ns)
 
 
 @product_ns.route('/product/<product_id>')
 @product_ns.param('product_id', 'The product identifier')
 class Product(Resource):
     @product_ns.doc('get_product')
-    @product_ns.response(200, 'Success', product_ns.models['product_detail'])
+    @product_ns.response(200, 'Success', models['product_detail'])
     @product_ns.response(404, 'Product not found')
     @product_ns.response(401, 'Unauthorized')
     @token_required
@@ -62,7 +64,7 @@ class Product(Resource):
 @product_ns.route('/products')
 class ProductList(Resource):
     @product_ns.doc('list_products')
-    @product_ns.response(200, 'Success', [product_ns.models['product_list_item']])
+    @product_ns.response(200, 'Success', [models['product_list_item']])
     def get(self):
         """Get all products with their sustainability metrics"""
         async def fetch_all_batch_data(batches):

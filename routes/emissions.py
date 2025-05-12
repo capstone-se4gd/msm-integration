@@ -6,12 +6,15 @@ from auth import query_db, execute_db
 from threading import Thread
 import requests
 
+from models import register_models
+
 emissions_ns = Namespace('emissions', description='Emissions data operations')
+models = register_models(emissions_ns)
 
 @emissions_ns.route('/emissions')
 class Emissions(Resource):
     @emissions_ns.doc('get_emissions')
-    @emissions_ns.response(200, 'Success', [emissions_ns.models['emissions_model']])
+    @emissions_ns.response(200, 'Success', [models['emissions_model']])
     @emissions_ns.response(404, 'Emissions not found')
     @emissions_ns.response(401, 'Unauthorized')
     @emissions_ns.response(500, 'Internal Server Error')

@@ -6,13 +6,15 @@ from datetime import datetime
 from auth import query_db, execute_db
 import requests
 import os
-batch_ns = Namespace('batches', description='Batch management operations')
+from models import register_models
 
+batch_ns = Namespace('batches', description='Batch management operations')
+models = register_models(batch_ns)
 @batch_ns.route('/create-batch')
 class CreateBatch(Resource):
     @batch_ns.doc('create_batch')
-    @batch_ns.expect(batch_ns.models['batch_request'])
-    @batch_ns.response(200, 'Success', batch_ns.models['batch_response'])
+    @batch_ns.expect(models['batch_request'])
+    @batch_ns.response(200, 'Success', models['batch_response'])
     @batch_ns.response(400, 'Bad request')
     @batch_ns.response(404, 'Product not found')
     @batch_ns.response(500, 'Internal server error')
