@@ -8,7 +8,7 @@ WORKDIR /app
 COPY . /app
 
 # Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements-aux.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy and make the entrypoint script executable
 RUN chmod +x entrypoint.sh
@@ -17,7 +17,7 @@ RUN chmod +x entrypoint.sh
 EXPOSE 5000
 
 # Define environment variable for Flask app (using main-aux.py)
-ENV FLASK_APP=main-aux.py
+ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5000
 

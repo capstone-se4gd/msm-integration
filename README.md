@@ -145,3 +145,10 @@ The database is set up with a default admin user:
 - Password: `admin123`
 
 There's also a sample product and batch for testing purposes.
+
+### Swagger PROD:
+
+Access the prod POC at: 
+```
+https://msm-integration.onrender.com/api/docs
+```
