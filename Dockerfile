@@ -1,5 +1,5 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -20,6 +20,6 @@ EXPOSE 5000
 ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=5000
-
+ENV LEDGER_URL=https://traceable-ledger-backend.onrender.com/
 # Run the entrypoint script
 CMD ["./entrypoint.sh"]

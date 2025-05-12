@@ -5,7 +5,7 @@ from auth import execute_db
 import sqlite3
 import threading
 import json
-from flask import current_app
+from flask import current_app, copy_current_request_context
 
 # Database file path
 DATABASE = 'database.db'
@@ -22,6 +22,7 @@ def schedule_transaction_deletion(transaction_id, hours=24):
     )
     
     # Create a timer to delete the transaction
+    @copy_current_request_context
     def delete_transaction():
         with current_app.app_context():
             try:

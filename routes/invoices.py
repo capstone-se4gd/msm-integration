@@ -11,7 +11,7 @@ from auth import query_db, execute_db
 import asyncio
 from flask_restx import Api, Resource, fields, Namespace
 from concurrent.futures import ThreadPoolExecutor
-from flask import current_app
+from flask import current_app, copy_current_request_context
 from models import register_models
 
 invoice_ns = Namespace('invoices', description='Invoice processing operations')
@@ -47,8 +47,9 @@ class ProcessInvoices(Resource):
         # Generate transaction ID
         transaction_id = str(uuid.uuid4())
         insert = 'INSERT INTO transactions (id, result, created_at) VALUES (?, ?, ?)'
-        
+
         # Process XML files asynchronously
+        @copy_current_request_context
         def process_files():
             update = 'UPDATE transactions SET result = ?, deletion_scheduled_at = ? WHERE id = ?'
             try:
