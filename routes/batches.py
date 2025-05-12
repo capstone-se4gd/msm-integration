@@ -1,0 +1,179 @@
+from flask_restx import Namespace, Resource
+from flask import request
+from auth import token_required
+import uuid
+from datetime import datetime
+from auth import query_db, execute_db
+import requests
+import os
+batch_ns = Namespace('batches', description='Batch management operations')
+
+@batch_ns.route('/create-batch')
+class CreateBatch(Resource):
+    @batch_ns.doc('create_batch')
+    @batch_ns.expect(batch_ns.models['batch_request'])
+    @batch_ns.response(200, 'Success', batch_ns.models['batch_response'])
+    @batch_ns.response(400, 'Bad request')
+    @batch_ns.response(404, 'Product not found')
+    @batch_ns.response(500, 'Internal server error')
+    @batch_ns.response(401, 'Unauthorized')
+    @token_required
+    def post(self, current_user):
+        """Create a new batch for a product"""
+        data = request.get_json()
+        
+        if not data:
+            return {'error': 'No data provided'}, 400
+        
+        required_fields = ['productName', 'invoices']
+        for field in required_fields:
+            if field not in data:
+                return {'error': f'Missing required field: {field}'}, 400
+        
+        product_id = data.get('productId')
+        product_name = data['productName']
+        
+        if product_id:
+            product = query_db('SELECT * FROM products WHERE id = ?', [product_id], one=True)
+            if not product:
+                return {'error': 'Product not found'}, 404
+        else:
+            product_id = str(uuid.uuid4())
+            execute_db(
+                'INSERT INTO products (id, name, created_at) VALUES (?, ?, ?)',
+                [product_id, product_name, datetime.utcnow().isoformat()]
+            )
+        
+        batch_id = str(uuid.uuid4())
+
+        invoices = data['invoices']
+        sustainability_metrics = {}
+        for invoice in invoices:
+            if 'sustainabilityMetrics' in invoice:
+                metrics = invoice['sustainabilityMetrics']
+                for metric in metrics:
+                    if 'name' in metric and 'value' in metric:
+                        name = metric['name']
+                        value = metric['value']
+                        if name not in sustainability_metrics:
+                            sustainability_metrics[name] = 0
+                        if invoice["emissionsArePerUnit"] == 'YES':
+                            sustainability_metrics[name] += value * float(invoice['quantityNeededPerUnit'])
+                        else:
+                            sustainability_metrics[name] += value / float(invoice['unitsBought']) * float(invoice['quantityNeededPerUnit'])
+
+        try:
+            # 1. Fetch defined sustainability metrics
+            metrics_url = f"{os.environ.get('LEDGER_URL')}/api/sustainability-metrics/"
+            metrics_response = requests.get(metrics_url)
+            if metrics_response.status_code != 200:
+                raise Exception(f"Failed to fetch sustainability metrics: {metrics_response.status_code}")
+            sustainability_metrics_defined = metrics_response.json()
+
+            # 2. Build sustainability metrics input
+            sustainability_metrics_input = []
+            for metric in sustainability_metrics_defined:
+                metric_id = metric['metric_id']
+                name = metric['name']
+                if name in sustainability_metrics:
+                    sustainability_metrics_input.append({
+                        'metric_id': metric_id,
+                        'value': sustainability_metrics[name]
+                    })
+
+            # 3. Format suppliers
+            suppliers = []
+            for supplier in invoices:
+                formatted_metrics = []
+                if 'sustainabilityMetrics' in supplier:
+                    for metric in supplier['sustainabilityMetrics']:
+                        name = metric.get('name')
+                        value = metric.get('value')
+                        if name and value is not None:
+                            metric_id = next((m['metric_id'] for m in sustainability_metrics_defined if m['name'] == name), None)
+                            if metric_id:
+                                formatted_metrics.append({'metric_id': metric_id, 'value': value})
+                    supplier['formattedMetrics'] = formatted_metrics
+
+                # 4. Ensure supplier URL exists or create supplier product
+                slug = None
+                if supplier.get('url') and supplier['url'] not in ('', 'None'):
+                    slug = supplier['url'].split('/')[-1]
+                else:
+                    new_product = {
+                        "name": supplier['productName'],
+                        "manufacturer": {
+                            "name": "",
+                            "mainURL": "http://localhost"
+                        },
+                        "sustainability_metrics_input": formatted_metrics,
+                        "number_of_units": supplier['unitsBought'],
+                        "subparts": []
+                    }
+                    create_url = f"{os.environ.get('LEDGER_URL')}/api/products/"
+                    create_response = requests.post(create_url, json=new_product)
+                    if create_response.status_code not in (200, 201):
+                        raise Exception(f"Failed to create product: {create_response.status_code} - {create_response.text}")
+                    created = create_response.json()
+                    slug = created.get('slug')
+                    if not slug:
+                        raise Exception('Product created but no slug returned')
+                    supplier['url'] = f"{os.environ.get('LEDGER_URL')}/api/products/{slug}/"
+
+                suppliers.append({
+                    "name": supplier['productName'],
+                    "sustainability_metrics_input": formatted_metrics,
+                    "quantity_needed_per_unit": float(supplier['quantityNeededPerUnit']),
+                    "units_bought": float(supplier['unitsBought']),
+                    "manufacturer": {
+                        "name": "",
+                        "mainURL": "http://localhost"
+                    },
+                    "slug": slug
+                })
+
+            # 5. Create batch product (template)
+            batch_template = {
+                "name": f"{batch_id}",
+                "manufacturer": {
+                    "mainURL": "http://localhost"
+                },
+                "sustainability_metrics_input": sustainability_metrics_input,
+                "number_of_units": 1,
+                "subparts": []
+            }
+
+            create_batch_url = f"{os.environ.get('LEDGER_URL')}/api/products/"
+            batch_response = requests.post(create_batch_url, json=batch_template)
+            if batch_response.status_code not in (200, 201):
+                raise Exception(f"Failed to create batch: {batch_response.status_code} - {batch_response.text}")
+            batch_data = batch_response.json()
+            slug = batch_data.get('slug')
+            if not slug:
+                raise Exception('Batch created but no slug returned')
+            information_url = f"{os.environ.get('LEDGER_URL')}/api/products/{slug}/"
+
+            # Save batch to database
+            execute_db(
+                'INSERT INTO batches (id, product_id, information_url, created_at) VALUES (?, ?, ?, ?)',
+                [batch_id, product_id, information_url, datetime.utcnow().isoformat()]
+            )
+
+            # Create invoices
+            for invoice in invoices:
+                invoice_id = str(uuid.uuid4())
+                execute_db(
+                    'INSERT INTO invoices (id, batch_id, facility, organizational_unit, supplier_url, sub_category, invoice_number, invoice_date, emissions_are_per_unit, quantity_needed_per_unit, units_bought, total_amount, currency, transaction_start_date, transaction_end_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [invoice_id, batch_id, invoice['facility'], invoice['organizationalUnit'], invoice['url'], invoice['subCategory'], invoice['invoiceNumber'], invoice['invoiceDate'], invoice['emissionsArePerUnit'], invoice['quantityNeededPerUnit'], invoice['unitsBought'], invoice['totalAmount'], invoice['currency'], invoice['transactionStartDate'], invoice['transactionEndDate'], datetime.utcnow().isoformat()]
+                )
+
+            return {
+                'message': 'Batch created successfully',
+                'productId': product_id,
+                'batchId': batch_id
+            }, 200
+
+        except Exception as e:
+            # Clean up any created batches if error occurs
+            execute_db('DELETE FROM batches WHERE id = ?', [batch_id])
+            return {'error': f'Error creating batch: {str(e)}'}, 500
