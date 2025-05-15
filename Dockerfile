@@ -20,6 +20,6 @@ EXPOSE 8080
 ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
 ENV FLASK_RUN_PORT=8080
-ENV LEDGER_URL=http://13.60.163.155:8000/
+ENV LEDGER_URL=http://13.60.163.155:8000
 # Run the entrypoint script
 CMD ["./entrypoint.sh"]
