@@ -74,38 +74,48 @@ class Emissions(Resource):
                                 metricsArePerUnit = supplier.get('emissionsArePerUnit', 'NO')
                                 quantityNeededPerUnit = float(supplier.get('quantityNeededPerUnit', 1))
                                 unitsBought = float(supplier.get('unitsBought', 1))
+                                source = "Carbon emissions"
                                 if 'sustainability_metrics' in supplier_data:
                                     for metric in supplier_data['sustainability_metrics']:
                                         category = subcategories.get(metric.get('name'), 'Unknown')
                                         if category in ['Scope 1', 'Scope 2', 'Scope 3']:
                                             emissions += metric.get('value', 0) * (quantityNeededPerUnit if metricsArePerUnit == 'YES' else quantityNeededPerUnit / unitsBought)
                                         elif category == 'Water':
+                                            source = 'Water'
                                             water_consumption += metric.get('value', 0) * (quantityNeededPerUnit if metricsArePerUnit == 'YES' else quantityNeededPerUnit / unitsBought)
                                         elif category == 'Energy':
+                                            source = 'Energy'
                                             energy_consumption += metric.get('value', 0) * (quantityNeededPerUnit if metricsArePerUnit == 'YES' else quantityNeededPerUnit / unitsBought)
 
                                 print(f"Emissions calculated for {supplier['supplier_url']}: {emissions} kg CO2E, Water: {water_consumption} m3, Energy: {energy_consumption} kWh")
                                 emissions_template = {
-                                    'product_id': supplier_data.get('product_id'),
                                     'name': supplier_data.get('name'),
-                                    'product': supplier_data.get('name'),
-                                    'company': supplier_data.get('manufacturer', {}).get('name', ''),
-                                    'source': subcategories.get(supplier_data.get('subCategory'), 'Unknown'),
-                                    'category': subcategories.get(supplier_data.get('subCategory'), 'Unknown'),
-                                    'sub_category': supplier_data.get('subCategory'),
-                                    'CO2E': emissions,
-                                    'CO2E_unit': 'kg',
-                                    'quantity': water_consumption or energy_consumption,
-                                    'quantity_unit': 'Cubic meters' if water_consumption else 'kWh',
-                                    'timestamp': supplier_data.get('timestamp', datetime.utcnow().isoformat()),
-                                    'consumption_end_date': supplier_data.get('consumption_end_date', datetime.utcnow().isoformat()),
-                                    'emission_factor': supplier_data.get('emission_factor', 0),
-                                    'emission_factor_library': supplier_data.get('emission_factor_library', ''),
-                                    'transaction_start_date': supplier_data.get('transaction_start_date', datetime.utcnow().isoformat()),
-                                    'transaction_end_date': supplier_data.get('transaction_end_date', datetime.utcnow().isoformat()),
-                                    'water_transaction_type': supplier_data.get('water_transaction_type', ''),
-                                    'organizational_unit': supplier_data.get('organizational_unit', ''),
+                                    "originId": supplier_data.get('product_id'),
+                                    "productName": supplier_data.get('name'),
+                                    "description": f'{supplier_data.get("description", "")}',
+                                    "organizationUnit": supplier_data.get('organizational_unit', ''),
                                     'facility': supplier_data.get('facility', ''),
+                                    "provider": supplier_data.get('manufacturer', {}).get('name', None),
+                                    'quantity': water_consumption or energy_consumption,
+                                    "quantityUnit": 'Cubic meters' if water_consumption else 'MWh',
+                                    "cost": supplier_data.get('total_amount', 0),
+                                    "costUnit": supplier_data.get('currency', 'EUR'),
+                                    "emissonSource": source,
+                                    "emissonCategory": subcategories.get(supplier_data.get('subCategory'), 'Unknown'),
+                                    "emissonSubCategory": supplier_data.get('subCategory'),
+                                    "CO2E": emissions,
+                                    "CO2E_unit": 'kg',
+                                    "isRenewable": None,
+                                    "timestamp": supplier_data.get('timestamp', datetime.utcnow().isoformat()),
+                                    "consumptionStartDate": supplier_data.get('transaction_start_date', datetime.utcnow().isoformat()),
+                                    "consumptionEndDate": supplier_data.get('transaction_end_date', datetime.utcnow().isoformat()),
+                                    "transactionStartDate": supplier_data.get('transaction_start_date', datetime.utcnow().isoformat()),
+                                    "transactionEndDate": supplier_data.get('transaction_end_date', datetime.utcnow().isoformat()),
+                                    "emissionFactor": supplier_data.get('emission_factor', None),
+                                    "emissionFactorLibrary": supplier_data.get('emission_factor_library', None),
+                                    "waterTransactionType": supplier_data.get('water_transaction_type', 'Consumption'),
+                                    "fuelType": supplier_data.get('fuel_type', 'Diesel Oil'),
+                                    "dataQualityType": None
                                 }
                                 # Append to the emissions list
                                 if emissions > 0:
