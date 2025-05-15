@@ -13,13 +13,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy and make the entrypoint script executable
 RUN chmod +x entrypoint.sh
 
-# Make port 5000 available to the world outside the container
-EXPOSE 5000
+# Make port 8080 available to the world outside the container
+EXPOSE 8080
 
 # Define environment variable for Flask app (using main-aux.py)
 ENV FLASK_APP=main.py
 ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=5000
+ENV FLASK_RUN_PORT=8080
 ENV LEDGER_URL=http://13.60.163.155:8000/
 # Run the entrypoint script
 CMD ["./entrypoint.sh"]
