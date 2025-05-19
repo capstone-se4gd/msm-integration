@@ -48,7 +48,7 @@
         <UnitPriceAmount>50.00</UnitPriceAmount>
         <RowVatRatePercent>24</RowVatRatePercent>
         <RowAmount>10.00</RowAmount>
-        <Other>https://traceable-ledger-backend.onrender.com/api/products/wood-av0ls</Other>
+        <Other>http://16.171.152.25:8000/api/products/wood-ffish</Other>
     </InvoiceRow>
 
     <PaymentInstructionDetails>
