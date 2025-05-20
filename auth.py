@@ -6,7 +6,7 @@ import uuid
 import hashlib
 from functools import wraps
 from flask import request, jsonify, g
-from flask_restx import abort
+from flask_restx import abort, Resource, fields
 
 # Secret key for JWT - in production, use environment variables
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-for-dev')
@@ -58,13 +58,17 @@ def verify_password(stored_password, provided_password):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
         auth_header = request.headers.get('Authorization')
-        
-        # Extract token from header
-        if auth_header and auth_header.startswith('Bearer '):
-            token = auth_header.split(' ')[1]
-        
+
+        if not auth_header:
+            abort(401, 'Token is missing')
+
+        # Remove 'Bearer ' prefix if it exists
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]  # Skip 'Bearer ' part
+        else:
+            token = auth_header
+            
         if not token:
             abort(401, 'Token is missing')
         
@@ -92,101 +96,275 @@ def token_required(f):
     return decorated
 
 # Authentication routes
-def register_auth_routes(app):
+def register_auth_routes(app, auth_ns):
+    # Define models for the API
+    login_model = auth_ns.model('Login', {
+        'email': fields.String(required=True, description='User email'),
+        'password': fields.String(required=True, description='User password')
+    })
+    
+    register_model = auth_ns.model('Register', {
+        'username': fields.String(required=True, description='Username'),
+        'email': fields.String(required=True, description='User email'),
+        'password': fields.String(required=True, description='User password'),
+        'role': fields.String(required=False, description='User role', default='user')
+    })
+    
+    user_model = auth_ns.model('User', {
+        'id': fields.String(description='User ID'),
+        'username': fields.String(description='Username'),
+        'email': fields.String(description='User email'),
+        'role': fields.String(description='User role')
+    })
+    
+    token_response = auth_ns.model('TokenResponse', {
+        'message': fields.String(description='Response message'),
+        'authenticated': fields.Boolean(description='Authentication status'),
+        'token': fields.String(description='JWT token'),
+        'user': fields.Nested(user_model),
+        'expires_in': fields.Integer(description='Token expiration time in seconds')
+    })
+
+    update_user_model = auth_ns.model('UpdateUser', {
+        'username': fields.String(description='Username'),
+        'email': fields.String(description='User email'),
+        'password': fields.String(description='User password'),
+        'role': fields.String(description='User role')
+    })
     
     # Register teardown function
     app.teardown_appcontext(close_db)
     
-    @app.route('/auth/register', methods=['POST'])
-    def register():
-        data = request.get_json()
-        
-        if not data:
-            return jsonify({'message': 'No input data provided', 'success': False}), 400
-            
-        # Basic validation
-        required_fields = ['username', 'email', 'password']
-        for field in required_fields:
-            if field not in data:
-                return jsonify({
-                    'message': f'Missing required field: {field}', 
-                    'success': False
-                }), 400
-        
-        # Check if user already exists
-        if query_db('SELECT 1 FROM users WHERE username = ?', [data['username']], one=True):
-            return jsonify({'message': 'Username already exists!', 'success': False}), 409
-            
-        if query_db('SELECT 1 FROM users WHERE email = ?', [data['email']], one=True):
-            return jsonify({'message': 'Email already registered!', 'success': False}), 409
-        
-        # Create new user
-        user_id = str(uuid.uuid4())
-        hashed_password = hash_password(data['password'])
-        role = data.get('role', 'user')  # Default role is 'user'
-        
-        execute_db(
-            'INSERT INTO users (id, username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-            [user_id, data['username'], data['email'], hashed_password, role, datetime.datetime.utcnow().isoformat()]
-        )
-        
-        return jsonify({
-            'message': 'User registered successfully!',
-            'success': True,
-            'user_id': user_id
-        }), 201
+    @auth_ns.route('/register')
+    class Register(Resource):
+        @auth_ns.expect(register_model)
+        @auth_ns.doc(security='authorization')
+        @auth_ns.response(201, 'User registered successfully', user_model)
+        @auth_ns.response(400, 'Bad request')
+        @auth_ns.response(403, 'Forbidden - Only admin can register new users')
+        @auth_ns.response(409, 'Conflict - Username or email already exists')
+        @auth_ns.response(500, 'Internal server error')
+        @token_required
+        def post(self, current_user):
+            data = request.json
 
-    @app.route('/auth/login', methods=['POST'])
-    def login():
-        auth = request.get_json()
-        
-        if not auth or not auth.get('email') or not auth.get('password'):
-            return jsonify({'message': 'Missing login credentials!', 'authenticated': False}), 400
-        
-        username = auth.get('email')
-        password = auth.get('password')
-        
-        # Find user in database
-        user = query_db('SELECT * FROM users WHERE email = ?', [username], one=True)
-        
-        if not user:
-            return jsonify({'message': 'User not found!', 'authenticated': False}), 401
+            # Check if user is admin@example.com
+            if current_user['role'] != 'admin':
+                return {'message': 'Only admin can register new users!', 'success': False}, 403
+
+            # Basic validation
+            required_fields = ['username', 'email', 'password']
+            for field in required_fields:
+                if field not in data:
+                    return {'message': f'Missing required field: {field}', 'success': False}, 400
             
-        if verify_password(user['password'], password):
-            # Generate JWT token
-            token = jwt.encode({
-                'user_id': user['id'],
-                'username': user['username'],
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=TOKEN_EXPIRATION)
-            }, SECRET_KEY, algorithm="HS256")
+            # Check if user already exists
+            if query_db('SELECT 1 FROM users WHERE username = ?', [data['username']], one=True):
+                return {'message': 'Username already exists!', 'success': False}, 409
+                
+            if query_db('SELECT 1 FROM users WHERE email = ?', [data['email']], one=True):
+                return {'message': 'Email already registered!', 'success': False}, 409
             
-            return jsonify({
-                'message': 'Login successful',
-                'authenticated': True,
-                'token': token,
-                'user': {
-                    'id': user['id'],
+            # Create new user
+            user_id = str(uuid.uuid4())
+            hashed_password = hash_password(data['password'])
+            role = data.get('role', 'user')  # Default role is 'user'
+            
+            execute_db(
+                'INSERT INTO users (id, username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+                [user_id, data['username'], data['email'], hashed_password, role, datetime.datetime.utcnow().isoformat()]
+            )
+            
+            return {
+                'message': 'User registered successfully!',
+                'success': True,
+                'user_id': user_id
+            }, 201
+
+    @auth_ns.route('/login')
+    class Login(Resource):
+        @auth_ns.expect(login_model)
+        @auth_ns.response(200, 'Login successful', token_response)
+        def post(self):
+            auth = request.json
+            
+            if not auth or not auth.get('email') or not auth.get('password'):
+                return {'message': 'Missing login credentials!', 'authenticated': False}, 400
+            
+            username = auth.get('email')
+            password = auth.get('password')
+            
+            # Find user in database
+            user = query_db('SELECT * FROM users WHERE email = ?', [username], one=True)
+            
+            if not user:
+                return {'message': 'User not found!', 'authenticated': False}, 401
+                
+            if verify_password(user['password'], password):
+                # Generate JWT token
+                token = jwt.encode({
+                    'user_id': user['id'],
                     'username': user['username'],
-                    'email': user['email'],
-                    'role': user['role']
-                },
-                'expires_in': TOKEN_EXPIRATION * 60  # in seconds
-            })
-        
-        return jsonify({'message': 'Invalid credentials!', 'authenticated': False}), 401
+                    'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=TOKEN_EXPIRATION)
+                }, SECRET_KEY, algorithm="HS256")
+                
+                return {
+                    'message': 'Login successful',
+                    'authenticated': True,
+                    'token': token,
+                    'user': {
+                        'id': user['id'],
+                        'username': user['username'],
+                        'email': user['email'],
+                        'role': user['role']
+                    },
+                    'expires_in': TOKEN_EXPIRATION * 60  # in seconds
+                }
+            
+            return {'message': 'Invalid credentials!', 'authenticated': False}, 401
 
-    @app.route('/auth/validate-token', methods=['GET'])
-    @token_required
-    def validate_token(current_user):
-        return jsonify({
-            'message': 'Token is valid',
-            'authenticated': True,
-            'user': {
-                'id': current_user['id'], 
-                'username': current_user['username'],
-                'email': current_user['email'],
-                'role': current_user['role']
+    @auth_ns.route('/validate-token')
+    class ValidateToken(Resource):
+        @auth_ns.doc(security='authorization')
+        @token_required
+        def get(self, current_user):
+            return {
+                'message': 'Token is valid',
+                'authenticated': True,
+                'user': {
+                    'id': current_user['id'], 
+                    'username': current_user['username'],
+                    'email': current_user['email'],
+                    'role': current_user['role']
+                }
             }
-        })
+            
+    @auth_ns.route('/users/<string:user_id>')
+    class UserManagement(Resource):
+        @auth_ns.doc(security='authorization')
+        @auth_ns.expect(update_user_model)
+        @auth_ns.response(200, 'User updated successfully', user_model)
+        @auth_ns.response(403, 'Unauthorized to update this user')
+        @auth_ns.response(404, 'User not found')
+        @auth_ns.response(409, 'Username or email already taken')
+        @token_required
+        def put(self, user_id, current_user):
+            """Update user information"""
+            # Check permissions - users can only update their own info, admins can update any user
+            if current_user['id'] != user_id and current_user['role'] != 'admin':
+                return {'message': 'Unauthorized to update this user', 'success': False}, 403
+                
+            data = request.json
+            if not data:
+                return {'message': 'No update data provided', 'success': False}, 400
+                
+            # Verify user exists
+            user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
+            if not user:
+                return {'message': 'User not found', 'success': False}, 404
+                
+            # Prepare update fields
+            updates = []
+            params = []
+            
+            if 'username' in data and data['username']:
+                # Check if new username already exists (if changing)
+                if data['username'] != user['username']:
+                    if query_db('SELECT 1 FROM users WHERE username = ? AND id != ?', 
+                                [data['username'], user_id], one=True):
+                        return {'message': 'Username already taken', 'success': False}, 409
+                updates.append('username = ?')
+                params.append(data['username'])
+                
+            if 'email' in data and data['email']:
+                # Check if new email already exists (if changing)
+                if data['email'] != user['email']:
+                    if query_db('SELECT 1 FROM users WHERE email = ? AND id != ?', 
+                                [data['email'], user_id], one=True):
+                        return {'message': 'Email already registered', 'success': False}, 409
+                updates.append('email = ?')
+                params.append(data['email'])
+                
+            if 'password' in data and data['password']:
+                updates.append('password = ?')
+                params.append(hash_password(data['password']))
+                
+            if 'role' in data and data['role']:
+                # Only admins can change roles
+                if current_user['role'] != 'admin':
+                    return {'message': 'Only admins can change user roles', 'success': False}, 403
+                updates.append('role = ?')
+                params.append(data['role'])
+                
+            if not updates:
+                return {'message': 'No valid update fields provided', 'success': False}, 400
+                
+            # Execute update
+            params.append(user_id)  # For the WHERE clause
+            query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
+            execute_db(query, params)
+            
+            # Get updated user info
+            updated_user = query_db('SELECT id, username, email, role FROM users WHERE id = ?', 
+                                    [user_id], one=True)
+            
+            return {
+                'message': 'User updated successfully',
+                'success': True,
+                'user': updated_user
+            }, 200
+            
+        @auth_ns.doc(security='authorization')
+        @auth_ns.response(200, 'User deleted successfully')
+        @auth_ns.response(403, 'Unauthorized to delete this user')
+        @auth_ns.response(404, 'User not found')
+        @auth_ns.response(500, 'Internal server error')
+        @token_required
+        def delete(self, user_id, current_user):
+            """Delete a user account"""
+            # Check permissions - users can only delete their own account, admins can delete any user
+            if current_user['id'] != user_id and current_user['role'] != 'admin':
+                return {'message': 'Unauthorized to delete this user', 'success': False}, 403
+                
+            # Verify user exists
+            user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
+            if not user:
+                return {'message': 'User not found', 'success': False}, 404
+                
+            # Prevent deleting the last admin
+            if user['role'] == 'admin':
+                admin_count = query_db('SELECT COUNT(*) as count FROM users WHERE role = ?', 
+                                      ['admin'], one=True)
+                if admin_count['count'] <= 1:
+                    return {'message': 'Cannot delete the last admin account', 'success': False}, 403
+            
+            # Delete user
+            execute_db('DELETE FROM users WHERE id = ?', [user_id])
+            
+            return {
+                'message': 'User deleted successfully',
+                'success': True
+            }, 200
+
+    @auth_ns.route('/users')
+    class UserList(Resource):
+        @auth_ns.doc(security='authorization')
+        @auth_ns.response(200, 'List of users', [user_model])
+        @auth_ns.response(403, 'Unauthorized to list users')
+        @auth_ns.response(500, 'Internal server error')
+        @token_required
+        def get(self, current_user):
+            """List all users (admin only)"""
+            # Only admins can list all users
+            if current_user['role'] != 'admin':
+                return {'message': 'Unauthorized - Admin access required', 'success': False}, 403
+                
+            users = query_db('''
+                SELECT id, username, email, role, created_at 
+                FROM users 
+                ORDER BY created_at DESC
+            ''')
+            
+            return {'users': users, 'success': True}, 200
 
     return app

@@ -22,7 +22,7 @@ authorizations = {
         'type': 'apiKey',
         'in': 'header',
         'name': 'Authorization',
-        'description': "Type in the *'Value'* input box below: **'Bearer &lt;JWT&gt;'**, where JWT is the token"
+        'description': "Type in the *'Value'* input box below: **'&lt;JWT&gt;'**, where JWT is the token obtained from the login endpoint."
     }
 }
 
@@ -50,7 +50,7 @@ api.add_namespace(batch_ns, path='/api')
 api.add_namespace(product_ns, path='/api')
 api.add_namespace(emissions_ns, path='/api')
 
-app = register_auth_routes(app)
+app = register_auth_routes(app, auth_ns)
 
 # Custom error handler for the API
 

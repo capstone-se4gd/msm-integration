@@ -42,8 +42,8 @@ class CreateBatch(Resource):
         else:
             product_id = str(uuid.uuid4())
             execute_db(
-                'INSERT INTO products (id, name, created_at) VALUES (?, ?, ?)',
-                [product_id, product_name, datetime.utcnow().isoformat()]
+                'INSERT INTO products (id, name, user_id, created_at) VALUES (?, ?, ?, ?)',
+                [product_id, product_name, current_user['id'], datetime.utcnow().isoformat()]
             )
         
         batch_id = str(uuid.uuid4())
@@ -179,3 +179,104 @@ class CreateBatch(Resource):
             # Clean up any created batches if error occurs
             execute_db('DELETE FROM batches WHERE id = ?', [batch_id])
             return {'error': f'Error creating batch: {str(e)}'}, 500
+
+@batch_ns.route('/batches')
+class BatchList(Resource):
+    @batch_ns.doc('list_batches')
+    @batch_ns.response(200, 'Success')
+    @batch_ns.response(500, 'Internal server error')
+    @batch_ns.response(401, 'Unauthorized')
+    @token_required
+    def get(self, current_user):
+        """Retrieve all batches associated with the logged-in user's products"""
+        try:
+            # Query all batches and their products for the current user
+            batches = query_db('''
+                SELECT b.id, b.product_id, p.name as product_name, 
+                       b.information_url, b.created_at
+                FROM batches b
+                JOIN products p ON b.product_id = p.id
+                WHERE p.user_id = ?
+                ORDER BY b.created_at DESC
+            ''', [current_user['id']])
+            
+            return {'batches': batches}, 200
+        except Exception as e:
+            return {'error': f'Error retrieving batches: {str(e)}'}, 500
+
+@batch_ns.route('/batches/<string:id>')
+class BatchDetail(Resource):
+    @batch_ns.doc('get_batch')
+    @batch_ns.response(200, 'Success')
+    @batch_ns.response(404, 'Batch not found')
+    @batch_ns.response(403, 'Forbidden - not your batch')
+    @batch_ns.response(500, 'Internal server error')
+    @batch_ns.response(401, 'Unauthorized')
+    @token_required
+    def get(self, id, current_user):
+        """Retrieve detailed information about a specific batch owned by the user"""
+        try:
+            # Get batch information with user check
+            batch = query_db('''
+                SELECT b.id, b.product_id, p.name as product_name, 
+                       b.information_url, b.created_at
+                FROM batches b
+                JOIN products p ON b.product_id = p.id
+                WHERE b.id = ? AND p.user_id = ?
+            ''', [id, current_user['id']], one=True)
+            
+            if not batch:
+                # Check if batch exists at all
+                exists = query_db('SELECT 1 FROM batches WHERE id = ?', [id], one=True)
+                if exists:
+                    return {'error': 'Access denied to this batch'}, 403
+                else:
+                    return {'error': 'Batch not found'}, 404
+            
+            # Get batch invoices
+            invoices = query_db('''
+                SELECT id, facility, organizational_unit, supplier_url as url, 
+                       sub_category as subCategory, invoice_number as invoiceNumber, invoice_date as invoiceDate, 
+                       emissions_are_per_unit as emissionsArePerUnit, quantity_needed_per_unit as quantityNeededPerUnit, 
+                       units_bought as unitsBought, total_amount as totalAmount, currency, 
+                       transaction_start_date as transactionStartDate, transaction_end_date as transactionEndDate, 
+                       created_at as createdAt
+                FROM invoices
+                WHERE batch_id = ?
+            ''', [id])
+            
+            # Fetch additional data from invoice URLs and batch information_url
+            enriched_invoices = []
+            for invoice in invoices:
+                invoice_data = invoice.copy()
+                
+                # Fetch supplier data if URL is available
+                if invoice['url']:
+                    try:
+                        supplier_response = requests.get(invoice['url'])
+                        if supplier_response.status_code == 200:
+                            invoice_data['supplierDetails'] = supplier_response.json()
+                    except Exception as e:
+                        invoice_data['supplierFetchError'] = str(e)
+                
+                enriched_invoices.append(invoice_data)
+            
+            # Get batch data from information_url if available
+            batch_data = {}
+            if batch['information_url']:
+                try:
+                    batch_response = requests.get(batch['information_url'])
+                    if batch_response.status_code == 200:
+                        batch_data = batch_response.json()
+                except Exception as e:
+                    batch_data = {'fetchError': str(e)}
+            
+            result = {
+                'batch': batch,
+                'batchData': batch_data,
+                'invoices': enriched_invoices
+            }
+            
+            return result, 200
+        except Exception as e:
+            return {'error': f'Error retrieving batch details: {str(e)}'}, 500
