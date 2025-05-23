@@ -52,7 +52,6 @@
     <UnitPriceAmount>24.00</UnitPriceAmount>
     <RowVatRatePercent>24</RowVatRatePercent>
     <RowAmount>1200.00</RowAmount>
-    <Other>https://example.com/products/heat-mwh-50</Other>
   </InvoiceRow>
 
   <PaymentInstructionDetails>

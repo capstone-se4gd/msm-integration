@@ -7,7 +7,7 @@
   <MessageTransmissionDetails>
     <MessageSenderInterchangeID>FI44556677</MessageSenderInterchangeID>
     <MessageReceiverInterchangeID>FI77665544</MessageReceiverInterchangeID>
-    <MessageIdentifier>INV01</MessageIdentifier>
+    <MessageIdentifier>INV100</MessageIdentifier>
     <MessageTimeStamp>2025-04-29T09:00:00</MessageTimeStamp>
   </MessageTransmissionDetails>
 
@@ -34,7 +34,7 @@
   </BuyerPartyDetails>
 
   <InvoiceDetails>
-    <InvoiceTypeCode>INV01</InvoiceTypeCode>
+    <InvoiceTypeCode>INV100</InvoiceTypeCode>
     <InvoiceNumber>INV-2025-001</InvoiceNumber>
     <InvoiceDate>2025-04-29</InvoiceDate>
     <SellerReferenceIdentifier>PB-Order-789</SellerReferenceIdentifier>
@@ -52,7 +52,6 @@
     <UnitPriceAmount>2.50</UnitPriceAmount>
     <RowVatRatePercent>24</RowVatRatePercent>
     <RowAmount>5000.00</RowAmount>
-    <Other>https://example.com/products/board-sheets</Other>
   </InvoiceRow>
 
   <PaymentInstructionDetails>

@@ -52,7 +52,6 @@
     <UnitPriceAmount>0.20</UnitPriceAmount>
     <RowVatRatePercent>24</RowVatRatePercent>
     <RowAmount>3200.00</RowAmount>
-    <Other>https://example.com/products/electricity-16k</Other>
   </InvoiceRow>
 
   <PaymentInstructionDetails>

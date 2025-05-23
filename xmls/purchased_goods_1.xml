@@ -48,7 +48,7 @@
         <UnitPriceAmount>50.00</UnitPriceAmount>
         <RowVatRatePercent>24</RowVatRatePercent>
         <RowAmount>10.00</RowAmount>
-        <Other>http://16.171.152.25:8000/api/products/wood-ffish</Other>
+        <Other>http://13.61.7.161:8000/api/products/wood-fhp3j</Other>
     </InvoiceRow>
 
     <PaymentInstructionDetails>

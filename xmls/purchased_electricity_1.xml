@@ -52,7 +52,6 @@
     <UnitPriceAmount>0.20</UnitPriceAmount>
     <RowVatRatePercent>24</RowVatRatePercent>
     <RowAmount>3000.00</RowAmount>
-    <Other>http://16.171.152.25:8000/api/products/electricity-kwh-o4u7s</Other>
   </InvoiceRow>
 
   <PaymentInstructionDetails>

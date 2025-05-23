@@ -52,7 +52,6 @@
     <UnitPriceAmount>4.00</UnitPriceAmount>
     <RowVatRatePercent>24</RowVatRatePercent>
     <RowAmount>220.00</RowAmount>
-    <Other>https://example.com/products/water-55m3</Other>
   </InvoiceRow>
 
   <PaymentInstructionDetails>
