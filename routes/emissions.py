@@ -1,7 +1,6 @@
 from flask_restx import Namespace, Resource
 from auth import token_required
-from utils.xml_parser import process_multiple_xml_files
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from auth import query_db, execute_db
 from threading import Thread
 import requests
@@ -10,6 +9,16 @@ from models import register_models
 
 emissions_ns = Namespace('emissions', description='Emissions data operations')
 models = register_models(emissions_ns)
+
+def format_date(date_obj):
+    """Convert date objects to ISO format strings"""
+    if date_obj is None:
+        return None
+    if isinstance(date_obj, datetime):
+        return date_obj.isoformat()
+    if isinstance(date_obj, date):
+        return date_obj.isoformat()
+    return date_obj  # Return as is if it's already a string or other type
 
 @emissions_ns.route('/emissions')
 class Emissions(Resource):
@@ -53,8 +62,8 @@ class Emissions(Resource):
                     data['subCategory'] = supplier.get('sub_category', 'Unknown')
                     data['facility'] = supplier.get('facility', 'Unknown')
                     data['organizational_unit'] = supplier.get('organizational_unit', 'Unknown')
-                    data['transaction_start_date'] = supplier.get('transaction_start_date', None)
-                    data['transaction_end_date'] = supplier.get('transaction_end_date', None)
+                    data['transaction_start_date'] = format_date(supplier.get('transaction_start_date', None))
+                    data['transaction_end_date'] = format_date(supplier.get('transaction_end_date', None))
                     data['emission_factor'] = supplier.get('emission_factor', None)
                     data['emission_factor_library'] = supplier.get('emission_factor_library', None)
                     data['water_transaction_type'] = supplier.get('water_transaction_type', 'Consumption')
@@ -69,7 +78,7 @@ class Emissions(Resource):
             def process_batch_suppliers(batch):
                 try:
                     supplier_emissions = []
-                    batch['suppliers'] = query_db('SELECT * FROM invoices WHERE batch_id = ?', [batch['id']])
+                    batch['suppliers'] = query_db('SELECT * FROM invoices WHERE batch_id = %s', [batch['id']])
                     if not batch['suppliers']:
                         print(f"No suppliers found for batch {batch['id']}")
                         return []
@@ -81,9 +90,9 @@ class Emissions(Resource):
                                 emissions = 0
                                 water_consumption = 0
                                 energy_consumption = 0
-                                metricsArePerUnit = supplier.get('emissionsArePerUnit', 'NO')
-                                quantityNeededPerUnit = float(supplier.get('quantityNeededPerUnit', 1))
-                                unitsBought = float(supplier.get('unitsBought', 1))
+                                metricsArePerUnit = supplier.get('emissions_are_per_unit', 'NO')
+                                quantityNeededPerUnit = float(supplier.get('quantity_needed_per_unit', 1))
+                                unitsBought = float(supplier.get('units_bought', 1))
                                 if 'sustainability_metrics' in supplier_data:
                                     for metric in supplier_data['sustainability_metrics']:
                                         category = subcategories.get(metric.get('name'), 'Unknown')
@@ -114,10 +123,10 @@ class Emissions(Resource):
                                     "CO2E_unit": 'kg',
                                     "isRenewable": None,
                                     "timestamp": supplier_data.get('timestamp', datetime.utcnow().isoformat()),
-                                    "consumptionStartDate": supplier_data.get('transaction_start_date', datetime.utcnow().isoformat()),
-                                    "consumptionEndDate": supplier_data.get('transaction_end_date', datetime.utcnow().isoformat()),
-                                    "transactionStartDate": supplier_data.get('transaction_start_date', datetime.utcnow().isoformat()),
-                                    "transactionEndDate": supplier_data.get('transaction_end_date', datetime.utcnow().isoformat()),
+                                    "consumptionStartDate": format_date(supplier_data.get('transaction_start_date')) or datetime.utcnow().isoformat(),
+                                    "consumptionEndDate": format_date(supplier_data.get('transaction_end_date')) or datetime.utcnow().isoformat(),
+                                    "transactionStartDate": format_date(supplier_data.get('transaction_start_date')) or datetime.utcnow().isoformat(),
+                                    "transactionEndDate": format_date(supplier_data.get('transaction_end_date')) or datetime.utcnow().isoformat(),
                                     "emissionFactor": supplier_data.get('emission_factor', None),
                                     "emissionFactorLibrary": supplier_data.get('emission_factor_library', None),
                                     "waterTransactionType": supplier_data.get('water_transaction_type', 'Consumption'),
@@ -169,7 +178,7 @@ class Emissions(Resource):
 
             for product in products:
                 product_id = product['id']
-                batches = query_db('SELECT * FROM batches WHERE product_id = ?', [product_id])
+                batches = query_db('SELECT * FROM batches WHERE product_id = %s', [product_id])
                 for batch in batches:
                     batch_emissions = process_batch_suppliers(batch)
                     all_emissions.extend(batch_emissions)

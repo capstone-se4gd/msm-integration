@@ -3,10 +3,10 @@ from flask import request
 from auth import token_required
 import uuid
 from datetime import datetime
-from auth import query_db, execute_db
 import requests
 import os
 from models import register_models
+from auth import query_db, execute_db
 
 batch_ns = Namespace('batches', description='Batch management operations')
 models = register_models(batch_ns)
@@ -36,14 +36,14 @@ class CreateBatch(Resource):
         product_name = data['productName']
         
         if product_id:
-            product = query_db('SELECT * FROM products WHERE id = ?', [product_id], one=True)
+            product = query_db('SELECT * FROM products WHERE id = %s', [product_id], one=True)
             if not product:
                 return {'error': 'Product not found'}, 404
         else:
             product_id = str(uuid.uuid4())
             execute_db(
-                'INSERT INTO products (id, name, user_id, created_at) VALUES (?, ?, ?, ?)',
-                [product_id, product_name, current_user['id'], datetime.utcnow().isoformat()]
+                'INSERT INTO products (id, name, user_id, created_at) VALUES (%s, %s, %s, %s)',
+                [product_id, product_name, current_user['id'], datetime.utcnow()]
             )
         
         batch_id = str(uuid.uuid4())
@@ -157,16 +157,16 @@ class CreateBatch(Resource):
 
             # Save batch to database
             execute_db(
-                'INSERT INTO batches (id, product_id, information_url, created_at) VALUES (?, ?, ?, ?)',
-                [batch_id, product_id, information_url, datetime.utcnow().isoformat()]
+                'INSERT INTO batches (id, product_id, information_url, created_at) VALUES (%s, %s, %s, %s)',
+                [batch_id, product_id, information_url, datetime.utcnow()]
             )
 
             # Create invoices
             for invoice in invoices:
                 invoice_id = str(uuid.uuid4())
                 execute_db(
-                    'INSERT INTO invoices (id, batch_id, facility, organizational_unit, supplier_url, sub_category, invoice_number, invoice_date, emissions_are_per_unit, quantity_needed_per_unit, units_bought, total_amount, currency, transaction_start_date, transaction_end_date, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [invoice_id, batch_id, invoice['facility'], invoice['organizationalUnit'], invoice['url'], invoice['subCategory'], invoice['invoiceNumber'], invoice['invoiceDate'], invoice['emissionsArePerUnit'], invoice['quantityNeededPerUnit'], invoice['unitsBought'], invoice['totalAmount'], invoice['currency'], invoice['transactionStartDate'], invoice['transactionEndDate'], datetime.utcnow().isoformat()]
+                    'INSERT INTO invoices (id, batch_id, facility, organizational_unit, supplier_url, sub_category, invoice_number, invoice_date, emissions_are_per_unit, quantity_needed_per_unit, units_bought, total_amount, currency, transaction_start_date, transaction_end_date, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)',
+                    [invoice_id, batch_id, invoice['facility'], invoice['organizationalUnit'], invoice['url'], invoice['subCategory'], invoice['invoiceNumber'], invoice['invoiceDate'], invoice['emissionsArePerUnit'], invoice['quantityNeededPerUnit'], invoice['unitsBought'], invoice['totalAmount'], invoice['currency'], invoice['transactionStartDate'], invoice['transactionEndDate'], datetime.utcnow()]
                 )
 
             return {
@@ -177,7 +177,7 @@ class CreateBatch(Resource):
 
         except Exception as e:
             # Clean up any created batches if error occurs
-            execute_db('DELETE FROM batches WHERE id = ?', [batch_id])
+            execute_db('DELETE FROM batches WHERE id = %s', [batch_id])
             return {'error': f'Error creating batch: {str(e)}'}, 500
 
 @batch_ns.route('/batches')
@@ -196,7 +196,7 @@ class BatchList(Resource):
                        b.information_url, b.created_at
                 FROM batches b
                 JOIN products p ON b.product_id = p.id
-                WHERE p.user_id = ?
+                WHERE p.user_id = %s
                 ORDER BY b.created_at DESC
             ''', [current_user['id']])
             
@@ -222,12 +222,12 @@ class BatchDetail(Resource):
                        b.information_url, b.created_at
                 FROM batches b
                 JOIN products p ON b.product_id = p.id
-                WHERE b.id = ? AND p.user_id = ?
+                WHERE b.id = %s AND p.user_id = %s
             ''', [id, current_user['id']], one=True)
             
             if not batch:
                 # Check if batch exists at all
-                exists = query_db('SELECT 1 FROM batches WHERE id = ?', [id], one=True)
+                exists = query_db('SELECT 1 FROM batches WHERE id = %s', [id], one=True)
                 if exists:
                     return {'error': 'Access denied to this batch'}, 403
                 else:
@@ -242,7 +242,7 @@ class BatchDetail(Resource):
                        transaction_start_date as transactionStartDate, transaction_end_date as transactionEndDate, 
                        created_at as createdAt
                 FROM invoices
-                WHERE batch_id = ?
+                WHERE batch_id = %s
             ''', [id])
             
             # Fetch additional data from invoice URLs and batch information_url

@@ -46,12 +46,12 @@ class ProcessInvoices(Resource):
         
         # Generate transaction ID
         transaction_id = str(uuid.uuid4())
-        insert = 'INSERT INTO transactions (id, result, created_at) VALUES (?, ?, ?)'
+        insert = 'INSERT INTO transactions (id, result, created_at) VALUES (%s, %s, %s)'
 
         # Process XML files asynchronously
         @copy_current_request_context
         def process_files():
-            update = 'UPDATE transactions SET result = ?, deletion_scheduled_at = ? WHERE id = ?'
+            update = 'UPDATE transactions SET result = %s, deletion_scheduled_at = %s WHERE id = %s'
             try:
                 # Create event loop
                 loop = asyncio.new_event_loop()
@@ -68,23 +68,23 @@ class ProcessInvoices(Resource):
                 with current_app.app_context():  # Properly enter the application context
                     try:
                         # Check if transaction ID already exists
-                        existing_transaction = query_db('SELECT * FROM transactions WHERE id = ?', [transaction_id], one=True)
+                        existing_transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
                         if not existing_transaction:
                             # Insert new transaction
                             execute_db(
                                 insert,
-                                [transaction_id, json.dumps(results), datetime.utcnow().isoformat()]
+                                [transaction_id, json.dumps(results), datetime.utcnow()]
                             )
                         # Save results to database and set deletion time to 24 hours later
                         execute_db(
                             update,
-                            [json.dumps(results), (datetime.utcnow() + timedelta(hours=24)).isoformat(), transaction_id]
+                            [json.dumps(results), (datetime.utcnow() + timedelta(hours=24)), transaction_id]
                         )
                     except Exception as e:
                         print(f"Error saving transaction {transaction_id}: {e}")
                         execute_db(
                             update,
-                            [f'Error saving transaction: {str(e)}', (datetime.utcnow() + timedelta(hours=24)).isoformat(), transaction_id]
+                            [f'Error saving transaction: {str(e)}', (datetime.utcnow() + timedelta(hours=24)), transaction_id]
                         )
                         
                 return True
@@ -94,7 +94,7 @@ class ProcessInvoices(Resource):
                 with current_app.app_context():  # Context needed here too
                     execute_db(
                         update,
-                        [transaction_id, f'Error processing files: {str(e)}', datetime.utcnow().isoformat()]
+                        [f'Error processing files: {str(e)}', datetime.utcnow(), transaction_id]
                     )
                 return False
 
@@ -104,11 +104,11 @@ class ProcessInvoices(Resource):
             executor.submit(process_files)
 
         # Check if transaction ID already exists
-        existing_transaction = query_db('SELECT * FROM transactions WHERE id = ?', [transaction_id], one=True)
+        existing_transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
         if not existing_transaction:
             execute_db(
                 insert,
-                [transaction_id, 'Processing started', datetime.utcnow().isoformat()]
+                [transaction_id, 'Processing started', datetime.utcnow()]
             )
         
         return {
@@ -127,7 +127,7 @@ class Transaction(Resource):
     def get(self, transaction_id, current_user):
         """Get the result of a transaction by ID"""
         # Get transaction from database
-        transaction = query_db('SELECT * FROM transactions WHERE id = ?', [transaction_id], one=True)
+        transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
         
         if not transaction:
             return {'error': 'Transaction not found'}, 404

@@ -1,4 +1,5 @@
-import sqlite3
+import pymysql
+import pymysql.cursors
 import jwt
 import datetime
 import os
@@ -7,20 +8,29 @@ import hashlib
 from functools import wraps
 from flask import request, jsonify, g
 from flask_restx import abort, Resource, fields
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Secret key for JWT - in production, use environment variables
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-for-dev')
 # Token expiration time (in minutes)
 TOKEN_EXPIRATION = 60  # 1 hour
-# Database file path
-DATABASE = 'database.db'
 
 def get_db():
     """Get database connection for the current request."""
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-        db.row_factory = sqlite3.Row  # This enables column access by name: row['column_name']
+        db = g._database = pymysql.connect(
+            host=os.environ.get('DB_HOST'),
+            user=os.environ.get('DB_USER'),
+            password=os.environ.get('DB_PASSWORD'),
+            database=os.environ.get('DB_NAME'),
+            port=int(os.environ.get('DB_PORT', 3306)),
+            charset='utf8mb4',
+            cursorclass=pymysql.cursors.DictCursor  # This enables column access by name
+        )
     return db
 
 def close_db(e=None):
@@ -31,19 +41,20 @@ def close_db(e=None):
 
 def query_db(query, args=(), one=False):
     """Query the database and return the results as a list of dictionaries."""
-    cur = get_db().execute(query, args)
-    rv = cur.fetchall()
-    cur.close()
-    return (dict(rv[0]) if rv else None) if one else [dict(row) for row in rv]
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(query, args)
+        rv = cur.fetchall()
+    return rv[0] if rv and one else rv
 
 def execute_db(query, args=(), commit=True):
     """Execute a database query and optionally commit changes."""
-    db = get_db()
-    cur = db.execute(query, args)
-    if commit:
-        db.commit()
-    last_id = cur.lastrowid
-    cur.close()
+    conn = get_db()
+    with conn.cursor() as cur:
+        cur.execute(query, args)
+        last_id = cur.lastrowid
+        if commit:
+            conn.commit()
     return last_id
 
 def hash_password(password):
@@ -78,7 +89,7 @@ def token_required(f):
             user_id = data['user_id']
             
             # Get the user from database
-            current_user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
+            current_user = query_db('SELECT * FROM users WHERE id = %s', [user_id], one=True)
             
             if not current_user:
                 abort(401, 'User not found')
@@ -148,7 +159,7 @@ def register_auth_routes(app, auth_ns):
         def post(self, current_user):
             data = request.json
 
-            # Check if user is admin@example.com
+            # Check if user is admin
             if current_user['role'] != 'admin':
                 return {'message': 'Only admin can register new users!', 'success': False}, 403
 
@@ -159,10 +170,10 @@ def register_auth_routes(app, auth_ns):
                     return {'message': f'Missing required field: {field}', 'success': False}, 400
             
             # Check if user already exists
-            if query_db('SELECT 1 FROM users WHERE username = ?', [data['username']], one=True):
+            if query_db('SELECT 1 FROM users WHERE username = %s', [data['username']], one=True):
                 return {'message': 'Username already exists!', 'success': False}, 409
                 
-            if query_db('SELECT 1 FROM users WHERE email = ?', [data['email']], one=True):
+            if query_db('SELECT 1 FROM users WHERE email = %s', [data['email']], one=True):
                 return {'message': 'Email already registered!', 'success': False}, 409
             
             # Create new user
@@ -171,8 +182,8 @@ def register_auth_routes(app, auth_ns):
             role = data.get('role', 'user')  # Default role is 'user'
             
             execute_db(
-                'INSERT INTO users (id, username, email, password, role, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-                [user_id, data['username'], data['email'], hashed_password, role, datetime.datetime.utcnow().isoformat()]
+                'INSERT INTO users (id, username, email, password, role, created_at) VALUES (%s, %s, %s, %s, %s, %s)',
+                [user_id, data['username'], data['email'], hashed_password, role, datetime.datetime.utcnow()]
             )
             
             return {
@@ -195,7 +206,7 @@ def register_auth_routes(app, auth_ns):
             password = auth.get('password')
             
             # Find user in database
-            user = query_db('SELECT * FROM users WHERE email = ?', [username], one=True)
+            user = query_db('SELECT * FROM users WHERE email = %s', [username], one=True)
             
             if not user:
                 return {'message': 'User not found!', 'authenticated': False}, 401
@@ -259,7 +270,7 @@ def register_auth_routes(app, auth_ns):
                 return {'message': 'No update data provided', 'success': False}, 400
                 
             # Verify user exists
-            user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
+            user = query_db('SELECT * FROM users WHERE id = %s', [user_id], one=True)
             if not user:
                 return {'message': 'User not found', 'success': False}, 404
                 
@@ -270,30 +281,30 @@ def register_auth_routes(app, auth_ns):
             if 'username' in data and data['username']:
                 # Check if new username already exists (if changing)
                 if data['username'] != user['username']:
-                    if query_db('SELECT 1 FROM users WHERE username = ? AND id != ?', 
+                    if query_db('SELECT 1 FROM users WHERE username = %s AND id != %s', 
                                 [data['username'], user_id], one=True):
                         return {'message': 'Username already taken', 'success': False}, 409
-                updates.append('username = ?')
+                updates.append('username = %s')
                 params.append(data['username'])
                 
             if 'email' in data and data['email']:
                 # Check if new email already exists (if changing)
                 if data['email'] != user['email']:
-                    if query_db('SELECT 1 FROM users WHERE email = ? AND id != ?', 
+                    if query_db('SELECT 1 FROM users WHERE email = %s AND id != %s', 
                                 [data['email'], user_id], one=True):
                         return {'message': 'Email already registered', 'success': False}, 409
-                updates.append('email = ?')
+                updates.append('email = %s')
                 params.append(data['email'])
                 
             if 'password' in data and data['password']:
-                updates.append('password = ?')
+                updates.append('password = %s')
                 params.append(hash_password(data['password']))
                 
             if 'role' in data and data['role']:
                 # Only admins can change roles
                 if current_user['role'] != 'admin':
                     return {'message': 'Only admins can change user roles', 'success': False}, 403
-                updates.append('role = ?')
+                updates.append('role = %s')
                 params.append(data['role'])
                 
             if not updates:
@@ -301,11 +312,11 @@ def register_auth_routes(app, auth_ns):
                 
             # Execute update
             params.append(user_id)  # For the WHERE clause
-            query = f"UPDATE users SET {', '.join(updates)} WHERE id = ?"
+            query = f"UPDATE users SET {', '.join(updates)} WHERE id = %s"
             execute_db(query, params)
             
             # Get updated user info
-            updated_user = query_db('SELECT id, username, email, role FROM users WHERE id = ?', 
+            updated_user = query_db('SELECT id, username, email, role FROM users WHERE id = %s', 
                                     [user_id], one=True)
             
             return {
@@ -327,19 +338,19 @@ def register_auth_routes(app, auth_ns):
                 return {'message': 'Unauthorized to delete this user', 'success': False}, 403
                 
             # Verify user exists
-            user = query_db('SELECT * FROM users WHERE id = ?', [user_id], one=True)
+            user = query_db('SELECT * FROM users WHERE id = %s', [user_id], one=True)
             if not user:
                 return {'message': 'User not found', 'success': False}, 404
                 
             # Prevent deleting the last admin
             if user['role'] == 'admin':
-                admin_count = query_db('SELECT COUNT(*) as count FROM users WHERE role = ?', 
+                admin_count = query_db('SELECT COUNT(*) as count FROM users WHERE role = %s', 
                                       ['admin'], one=True)
                 if admin_count['count'] <= 1:
                     return {'message': 'Cannot delete the last admin account', 'success': False}, 403
             
             # Delete user
-            execute_db('DELETE FROM users WHERE id = ?', [user_id])
+            execute_db('DELETE FROM users WHERE id = %s', [user_id])
             
             return {
                 'message': 'User deleted successfully',

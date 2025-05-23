@@ -1,6 +1,8 @@
 flask==2.3.3
 flask-restx
 requests
+pymysql
+cryptography
 pyjwt==2.1.0
 aiohttp==3.7.4.post0
 asyncio==3.4.3

@@ -1,14 +1,10 @@
 from datetime import datetime, timedelta
 import aiohttp
 # Import the authentication module
-from auth import execute_db
-import sqlite3
+from auth import execute_db, query_db
 import threading
 import json
 from flask import current_app, copy_current_request_context
-
-# Database file path
-DATABASE = 'database.db'
 
 # Schedule transaction deletion
 def schedule_transaction_deletion(transaction_id, hours=24):
@@ -17,8 +13,8 @@ def schedule_transaction_deletion(transaction_id, hours=24):
     
     # Update transaction with scheduled deletion time
     execute_db(
-        'UPDATE transactions SET deletion_scheduled_at = ? WHERE id = ?',
-        [deletion_time.isoformat(), transaction_id]
+        'UPDATE transactions SET deletion_scheduled_at = %s WHERE id = %s',
+        [deletion_time, transaction_id]
     )
     
     # Create a timer to delete the transaction
@@ -26,11 +22,8 @@ def schedule_transaction_deletion(transaction_id, hours=24):
     def delete_transaction():
         with current_app.app_context():
             try:
-                conn = sqlite3.connect(DATABASE)
-                cursor = conn.cursor()
-                cursor.execute('DELETE FROM transactions WHERE id = ?', [transaction_id])
-                conn.commit()
-                conn.close()
+                # Use execute_db instead of direct SQLite connection
+                execute_db('DELETE FROM transactions WHERE id = %s', [transaction_id])
                 print(f"Transaction {transaction_id} deleted as scheduled")
             except Exception as e:
                 print(f"Error deleting transaction {transaction_id}: {e}")

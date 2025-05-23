@@ -20,13 +20,13 @@ class Product(Resource):
     def get(self, product_id, current_user):
         """Get product details by ID"""
         # Check if product exists
-        product = query_db('SELECT * FROM products WHERE id = ?', [product_id], one=True)
+        product = query_db('SELECT * FROM products WHERE id = %s', [product_id], one=True)
         
         if not product:
             return {'error': 'Product not found'}, 404
         
         # Get all batches for this product
-        batches = query_db('SELECT * FROM batches WHERE product_id = ?', [product_id])
+        batches = query_db('SELECT * FROM batches WHERE product_id = %s', [product_id])
         
         # For each batch, fetch information from the URL
         batch_data = []
@@ -90,7 +90,7 @@ class ProductList(Resource):
         
         all_products = []
         for product in products:
-            batches = query_db('SELECT * FROM batches WHERE product_id = ?', [product['id']])
+            batches = query_db('SELECT * FROM batches WHERE product_id = %s', [product['id']])
         
             # Fetch all sustainability records
             loop = asyncio.new_event_loop()
