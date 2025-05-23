@@ -4,6 +4,14 @@ from auth import query_db
 import asyncio
 import aiohttp
 from models import register_models
+from datetime import datetime
+
+# Add this helper function at the top of your file
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    raise TypeError(f"Type {type(obj)} not serializable")
 
 product_ns = Namespace('products', description='Product management operations')
 models = register_models(product_ns)
@@ -27,38 +35,53 @@ class Product(Resource):
         
         # Get all batches for this product
         batches = query_db('SELECT * FROM batches WHERE product_id = %s', [product_id])
+        batch_count = len(batches)
         
-        # For each batch, fetch information from the URL
-        batch_data = []
-        
+        # Collect all invoices related to all batches
+        all_invoices = []
         for batch in batches:
-            # In a real application, you would fetch data from the URL
-            # For now, let's simulate it
+            invoices = query_db('SELECT * FROM invoices WHERE batch_id = %s', [batch['id']])
+            all_invoices.extend(invoices)
+        
+        # Fetch supplier information for each invoice
+        async def fetch_supplier_info(url):
             try:
-                # Simulated data (in a real app, you'd call the URL)
-                sustainability_data = {
-                    'carbon_footprint': 123.45,
-                    'water_usage': 67.89,
-                    'energy_consumption': 42.0
-                }
-                
-                batch_info = {
-                    'id': batch['id'],
-                    'created_at': batch['created_at'],
-                    **sustainability_data
-                }
-                
-                batch_data.append(batch_info)
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            return data.get('name')
+                        return None
             except Exception as e:
-                batch_data.append({
-                    'id': batch['id'],
-                    'error': f'Error fetching data: {str(e)}'
-                })
+                print(f"Error fetching supplier info: {str(e)}")
+                return None
+
+        async def fetch_all_suppliers():
+            tasks = []
+            for invoice in all_invoices:
+                if invoice.get('supplier_url'):
+                    tasks.append(fetch_supplier_info(invoice['supplier_url']))
+            return await asyncio.gather(*tasks)
+        
+        # Create and execute event loop
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        supplier_names = loop.run_until_complete(fetch_all_suppliers())
+        loop.close()
+        
+        # Filter out None values and get unique names
+        unique_suppliers = list(set(filter(None, supplier_names)))
+        
+        # Convert product name to string if it's a datetime
+        product_name = product['name']
+        if isinstance(product_name, datetime):
+            product_name = product_name.isoformat()
         
         return {
             'productId': product_id,
-            'productName': product['name'],
-            'batches': batch_data
+            'productName': product_name,
+            'batchCount': batch_count,
+            'relatedSuppliers': unique_suppliers
         }, 200
 
 @product_ns.route('/products')

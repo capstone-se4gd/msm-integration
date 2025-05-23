@@ -2,7 +2,7 @@ from flask_restx import Namespace, Resource
 from flask import request
 from auth import token_required
 import uuid
-from datetime import datetime
+from datetime import datetime, date  # Add date import here
 import requests
 import os
 from models import register_models
@@ -200,6 +200,11 @@ class BatchList(Resource):
                 ORDER BY b.created_at DESC
             ''', [current_user['id']])
             
+            # Convert datetime objects to strings
+            for batch in batches:
+                if isinstance(batch['created_at'], datetime):
+                    batch['created_at'] = batch['created_at'].isoformat()
+            
             return {'batches': batches}, 200
         except Exception as e:
             return {'error': f'Error retrieving batches: {str(e)}'}, 500
@@ -216,6 +221,16 @@ class BatchDetail(Resource):
     def get(self, id, current_user):
         """Retrieve detailed information about a specific batch owned by the user"""
         try:
+            # Helper function to convert datetime objects in nested structures
+            def convert_datetime(obj):
+                if isinstance(obj, (datetime, date)):  # Handle both datetime and date objects
+                    return obj.isoformat()
+                elif isinstance(obj, dict):
+                    return {k: convert_datetime(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_datetime(item) for item in obj]
+                return obj
+            
             # Get batch information with user check
             batch = query_db('''
                 SELECT b.id, b.product_id, p.name as product_name, 
@@ -233,6 +248,9 @@ class BatchDetail(Resource):
                 else:
                     return {'error': 'Batch not found'}, 404
             
+            if batch and isinstance(batch['created_at'], datetime):
+                batch['created_at'] = batch['created_at'].isoformat()
+
             # Get batch invoices
             invoices = query_db('''
                 SELECT id, facility, organizational_unit, supplier_url as url, 
@@ -276,6 +294,9 @@ class BatchDetail(Resource):
                 'batchData': batch_data,
                 'invoices': enriched_invoices
             }
+            
+            # Convert all datetime objects to strings
+            result = convert_datetime(result)
             
             return result, 200
         except Exception as e:

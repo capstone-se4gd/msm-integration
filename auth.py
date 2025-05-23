@@ -69,6 +69,7 @@ def verify_password(stored_password, provided_password):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        # Check for the Authorization header
         auth_header = request.headers.get('Authorization')
 
         if not auth_header:
@@ -149,7 +150,6 @@ def register_auth_routes(app, auth_ns):
     @auth_ns.route('/register')
     class Register(Resource):
         @auth_ns.expect(register_model)
-        @auth_ns.doc(security='authorization')
         @auth_ns.response(201, 'User registered successfully', user_model)
         @auth_ns.response(400, 'Bad request')
         @auth_ns.response(403, 'Forbidden - Only admin can register new users')
@@ -236,7 +236,6 @@ def register_auth_routes(app, auth_ns):
 
     @auth_ns.route('/validate-token')
     class ValidateToken(Resource):
-        @auth_ns.doc(security='authorization')
         @token_required
         def get(self, current_user):
             return {
@@ -252,7 +251,6 @@ def register_auth_routes(app, auth_ns):
             
     @auth_ns.route('/users/<string:user_id>')
     class UserManagement(Resource):
-        @auth_ns.doc(security='authorization')
         @auth_ns.expect(update_user_model)
         @auth_ns.response(200, 'User updated successfully', user_model)
         @auth_ns.response(403, 'Unauthorized to update this user')
@@ -325,7 +323,7 @@ def register_auth_routes(app, auth_ns):
                 'user': updated_user
             }, 200
             
-        @auth_ns.doc(security='authorization')
+        @auth_ns.doc(security='Authorization')
         @auth_ns.response(200, 'User deleted successfully')
         @auth_ns.response(403, 'Unauthorized to delete this user')
         @auth_ns.response(404, 'User not found')
@@ -359,7 +357,6 @@ def register_auth_routes(app, auth_ns):
 
     @auth_ns.route('/users')
     class UserList(Resource):
-        @auth_ns.doc(security='authorization')
         @auth_ns.response(200, 'List of users', [user_model])
         @auth_ns.response(403, 'Unauthorized to list users')
         @auth_ns.response(500, 'Internal server error')
@@ -375,6 +372,11 @@ def register_auth_routes(app, auth_ns):
                 FROM users 
                 ORDER BY created_at DESC
             ''')
+            
+            # Convert datetime objects to strings
+            for user in users:
+                if isinstance(user.get('created_at'), datetime.datetime):
+                    user['created_at'] = user['created_at'].isoformat()
             
             return {'users': users, 'success': True}, 200
 

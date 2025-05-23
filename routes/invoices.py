@@ -48,6 +48,14 @@ class ProcessInvoices(Resource):
         transaction_id = str(uuid.uuid4())
         insert = 'INSERT INTO transactions (id, result, created_at) VALUES (%s, %s, %s)'
 
+        # Check if transaction ID already exists
+        existing_transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
+        if not existing_transaction:
+            execute_db(
+                insert,
+                [transaction_id, 'Processing started', datetime.utcnow()]
+            )
+
         # Process XML files asynchronously
         @copy_current_request_context
         def process_files():
@@ -67,15 +75,8 @@ class ProcessInvoices(Resource):
 
                 with current_app.app_context():  # Properly enter the application context
                     try:
-                        # Check if transaction ID already exists
-                        existing_transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
-                        if not existing_transaction:
-                            # Insert new transaction
-                            execute_db(
-                                insert,
-                                [transaction_id, json.dumps(results), datetime.utcnow()]
-                            )
-                        # Save results to database and set deletion time to 24 hours later
+                        # Just update the transaction - don't try to insert it again
+                        # The main thread already created the transaction
                         execute_db(
                             update,
                             [json.dumps(results), (datetime.utcnow() + timedelta(hours=24)), transaction_id]
@@ -86,7 +87,7 @@ class ProcessInvoices(Resource):
                             update,
                             [f'Error saving transaction: {str(e)}', (datetime.utcnow() + timedelta(hours=24)), transaction_id]
                         )
-                        
+                
                 return True
 
             except Exception as e:
@@ -98,18 +99,9 @@ class ProcessInvoices(Resource):
                     )
                 return False
 
-        
         # Use a thread pool to process files asynchronously
         with ThreadPoolExecutor() as executor:
             executor.submit(process_files)
-
-        # Check if transaction ID already exists
-        existing_transaction = query_db('SELECT * FROM transactions WHERE id = %s', [transaction_id], one=True)
-        if not existing_transaction:
-            execute_db(
-                insert,
-                [transaction_id, 'Processing started', datetime.utcnow()]
-            )
         
         return {
             'message': 'Processing started',
@@ -149,6 +141,6 @@ class Transaction(Resource):
         return {
             'id': transaction_id,
             'result': result,
-            'created_at': transaction['created_at'],
-            'deletion_scheduled_at': transaction['deletion_scheduled_at']
+            'created_at': transaction['created_at'].isoformat() if transaction['created_at'] else None,
+            'deletion_scheduled_at': transaction['deletion_scheduled_at'].isoformat() if transaction['deletion_scheduled_at'] else None
         }, 200

@@ -14,6 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN chmod +x entrypoint.sh
 
 # Create a script to generate .env file from environment variables
+# Don't forget to set the environment variables in your Docker run command or Docker Compose file
+# Example: docker run -e DB_HOST=localhost -e DB_PORT=5432 -e DB_USER=user -e DB_PASSWORD=pass -e DB_NAME=db -e JWT_SECRET_KEY=secret
 RUN echo '#!/bin/bash' > /app/generate_env.sh && \
     echo 'echo "DB_HOST=$DB_HOST" > .env' >> /app/generate_env.sh && \
     echo 'echo "DB_PORT=$DB_PORT" >> .env' >> /app/generate_env.sh && \
