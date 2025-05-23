@@ -13,22 +13,19 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy and make the entrypoint script executable
 RUN chmod +x entrypoint.sh
 
-# Create .env file with configuration variables
-RUN echo "DB_HOST=your-mysql-host.example.com" >> .env && \
-    echo "DB_PORT=3306" >> .env && \
-    echo "DB_USER=your_username" >> .env && \
-    echo "DB_PASSWORD=your_password" >> .env && \
-    echo "DB_NAME=your_database_name" >> .env && \
-    echo "JWT_SECRET_KEY=your_jwt_secret_key" >> .env
+# Create a script to generate .env file from environment variables
+RUN echo '#!/bin/bash' > /app/generate_env.sh && \
+    echo 'echo "DB_HOST=$DB_HOST" > .env' >> /app/generate_env.sh && \
+    echo 'echo "DB_PORT=$DB_PORT" >> .env' >> /app/generate_env.sh && \
+    echo 'echo "DB_USER=$DB_USER" >> .env' >> /app/generate_env.sh && \
+    echo 'echo "DB_PASSWORD=$DB_PASSWORD" >> .env' >> /app/generate_env.sh && \
+    echo 'echo "DB_NAME=$DB_NAME" >> .env' >> /app/generate_env.sh && \
+    echo 'echo "JWT_SECRET_KEY=$JWT_SECRET_KEY" >> .env' >> /app/generate_env.sh && \
+    echo 'echo "LEDGER_URL=$LEDGER_URL" >> .env' >> /app/generate_env.sh && \
+    chmod +x /app/generate_env.sh
 
 # Make port 8080 available to the world outside the container
 EXPOSE 8080
 
-# Define essential environment variables for Flask
-ENV FLASK_APP=main.py
-ENV FLASK_RUN_HOST=0.0.0.0
-ENV FLASK_RUN_PORT=8080
-ENV LEDGER_URL=http://13.61.7.161:8000
-
-# Run the entrypoint script
-CMD ["./entrypoint.sh"]
+# Update entrypoint script to first generate the .env file and then run the app
+CMD ["/bin/bash", "-c", "/app/generate_env.sh && ./entrypoint.sh"]
