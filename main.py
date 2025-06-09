@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import sqlite3
 import json
 from datetime import datetime, timedelta
@@ -13,6 +13,7 @@ from routes.products import product_ns
 from routes.emissions import emissions_ns
 from models import register_models
 from auth import register_auth_routes
+import time
 
 app = Flask(__name__)
 
@@ -51,6 +52,18 @@ api.add_namespace(product_ns, path='/api')
 api.add_namespace(emissions_ns, path='/api')
 
 app = register_auth_routes(app, auth_ns)
+
+@app.before_request
+def start_timer():
+    request._start_time = time.perf_counter()
+
+@app.after_request
+def log_request_performance(response):
+    if hasattr(request, '_start_time'):
+        duration = time.perf_counter() - request._start_time
+        print(f"[PERF] {request.method} {request.path} took {duration:.4f} seconds")
+        response.headers['X-Request-Duration'] = f"{duration:.4f}s"
+    return response
 
 # Custom error handler for the API
 
