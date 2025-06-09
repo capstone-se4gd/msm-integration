@@ -44,4 +44,4 @@ else
 fi
 
 # Then run the Flask app
-exec flask run
+exec flask run --host=0.0.0.0
