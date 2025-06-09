@@ -1,5 +1,4 @@
 import pymysql
-import pymysql.cursors
 import jwt
 import datetime
 import os
@@ -9,6 +8,7 @@ from functools import wraps
 from flask import request, jsonify, g
 from flask_restx import abort, Resource, fields
 from dotenv import load_dotenv
+from dbutils.pooled_db import PooledDB
 
 # Load environment variables
 load_dotenv()
@@ -18,19 +18,26 @@ SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-for-dev')
 # Token expiration time (in minutes)
 TOKEN_EXPIRATION = 60  # 1 hour
 
+# Connection pool initialization
+db_pool = PooledDB(
+    creator=pymysql,
+    maxconnections=10,
+    mincached=2,
+    maxcached=5,
+    host=os.environ.get('DB_HOST'),
+    user=os.environ.get('DB_USER'),
+    password=os.environ.get('DB_PASSWORD'),
+    database=os.environ.get('DB_NAME'),
+    port=int(os.environ.get('DB_PORT', 3306)),
+    charset='utf8mb4',
+    cursorclass=pymysql.cursors.DictCursor
+)
+
 def get_db():
-    """Get database connection for the current request."""
+    """Get database connection from the pool."""
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = pymysql.connect(
-            host=os.environ.get('DB_HOST'),
-            user=os.environ.get('DB_USER'),
-            password=os.environ.get('DB_PASSWORD'),
-            database=os.environ.get('DB_NAME'),
-            port=int(os.environ.get('DB_PORT', 3306)),
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor  # This enables column access by name
-        )
+        db = g._database = db_pool.connection()
     return db
 
 def close_db(e=None):

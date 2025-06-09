@@ -9,3 +9,7 @@ asyncio==3.4.3
 Werkzeug==2.3.7
 python-dotenv
 gunicorn
+dbutils
+flask-caching
+eventlet
+lxml

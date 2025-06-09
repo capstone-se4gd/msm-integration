@@ -6,6 +6,23 @@ import threading
 import json
 from flask import current_app, copy_current_request_context
 
+# Create a shared session object
+_session = None
+
+async def get_session():
+    """Get or create a shared aiohttp ClientSession."""
+    global _session
+    if _session is None or _session.closed:
+        _session = aiohttp.ClientSession(
+            connector=aiohttp.TCPConnector(
+                limit=20,  # Limit total connections
+                limit_per_host=5,  # Limit connections per host
+                ttl_dns_cache=300  # Cache DNS results for 5 minutes
+            ),
+            timeout=aiohttp.ClientTimeout(total=30)  # Set timeout
+        )
+    return _session
+
 # Schedule transaction deletion
 def schedule_transaction_deletion(transaction_id, hours=24):
     """Schedule transaction to be deleted after specified hours."""
@@ -35,20 +52,14 @@ def schedule_transaction_deletion(transaction_id, hours=24):
 
 # Helper function to fetch data from URL
 async def fetch_url_data(url):
-    """Fetch data from URL asynchronously."""
+    """Fetch data from URL using shared session."""
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    return await response.json()
-                else:
-                    return {'error': f'HTTP error: {response.status}'}
-    except aiohttp.ClientError as e:
-        print(f"ClientError while fetching URL {url}: {str(e)}")
-        return {'error': f'Connection error: {str(e)}'}
-    except json.JSONDecodeError as e:
-        print(f"JSONDecodeError while parsing response from {url}: {str(e)}")
-        return {'error': f'Invalid JSON response: {str(e)}'}
+        session = await get_session()
+        async with session.get(url) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return {'error': f'HTTP error: {response.status}'}
     except Exception as e:
-        print(f"Unexpected error while fetching {url}: {str(e)}")
+        print(f"Error fetching URL {url}: {str(e)}")
         return {'error': f'Fetch error: {str(e)}'}

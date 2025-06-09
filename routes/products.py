@@ -5,6 +5,8 @@ import asyncio
 import aiohttp
 from models import register_models
 from datetime import datetime
+from flask import request
+from extensions import cache
 
 # Add this helper function at the top of your file
 def json_serial(obj):
@@ -15,7 +17,6 @@ def json_serial(obj):
 
 product_ns = Namespace('products', description='Product management operations')
 models = register_models(product_ns)
-
 
 @product_ns.route('/product/<product_id>')
 @product_ns.param('product_id', 'The product identifier')
@@ -87,9 +88,12 @@ class Product(Resource):
 @product_ns.route('/products')
 class ProductList(Resource):
     @product_ns.doc('list_products')
-    @product_ns.response(200, 'Success', [models['product_list_item']])
+    @product_ns.param('page', 'Page number', type=int, default=1)
+    @product_ns.param('per_page', 'Items per page', type=int, default=10)
+    @cache.cached(timeout=300, query_string=True)
     def get(self):
-        """Get all products with their sustainability metrics"""
+        """Get all products with their sustainability metrics (paginated)"""
+
         async def fetch_all_batch_data(batches):
             async with aiohttp.ClientSession() as session:
                 tasks = []
@@ -108,8 +112,24 @@ class ProductList(Resource):
                 print(f"Error fetching batch info: {str(e)}")
                 return []
 
-        # Synchronous DB operations
-        products = query_db('SELECT * FROM products')
+        # Parse pagination parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 10, type=int)
+        
+        # Limit per_page to prevent excessive loads
+        per_page = min(per_page, 50)
+        
+        # Calculate offset
+        offset = (page - 1) * per_page
+        
+        # Get paginated products
+        products = query_db(
+            'SELECT * FROM products ORDER BY created_at DESC LIMIT %s OFFSET %s', 
+            [per_page, offset]
+        )
+        
+        # Get total count for pagination info
+        total = query_db('SELECT COUNT(*) as count FROM products', one=True)['count']
         
         all_products = []
         for product in products:
@@ -132,4 +152,12 @@ class ProductList(Resource):
             }
             all_products.append(result)
 
-        return all_products, 200
+        return {
+            'products': all_products,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': total,
+                'pages': (total + per_page - 1) // per_page
+            }
+        }, 200

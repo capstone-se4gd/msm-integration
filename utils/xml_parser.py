@@ -1,16 +1,18 @@
 # utils/xml_parser.py
-import xml.etree.ElementTree as ET
+import lxml.etree as ET  # Use lxml instead of the standard library
 import asyncio
 from utils.helpers import fetch_url_data
+from functools import lru_cache
 
+@lru_cache(maxsize=128)
 def xml_to_json(xml_content):
-    """Convert Finvoice XML content to JSON."""
+    """Convert Finvoice XML content to JSON with caching."""
     try:
         # Define the Finvoice namespace
         namespaces = {'fin': 'http://www.finvoice.fi/Finvoice'}
 
-        # Parse the XML content
-        root = ET.fromstring(xml_content)
+        # Parse the XML content - use faster lxml parser
+        root = ET.fromstring(xml_content.encode('utf-8'))
 
         # Helper function to strip namespace
         def strip_namespace(tag):
@@ -84,10 +86,16 @@ async def process_xml_file(xml_content):
 
 # Process multiple XML files
 async def process_multiple_xml_files(xml_files):
-    """Process multiple XML files concurrently."""
-    tasks = []
-    for xml_content in xml_files:
-        tasks.append(process_xml_file(xml_content))
+    """Process multiple XML files concurrently with optimized batching."""
+    # Process in batches to avoid flooding resources
+    BATCH_SIZE = 5
+    all_results = []
     
-    return await asyncio.gather(*tasks)
+    for i in range(0, len(xml_files), BATCH_SIZE):
+        batch = xml_files[i:i+BATCH_SIZE]
+        tasks = [process_xml_file(content) for content in batch]
+        results = await asyncio.gather(*tasks)
+        all_results.extend(results)
+    
+    return all_results
 

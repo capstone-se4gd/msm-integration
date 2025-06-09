@@ -2,3 +2,4 @@ __pycache__
 msm_env
 database.db
 .env
+cache

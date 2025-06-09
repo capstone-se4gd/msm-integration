@@ -14,8 +14,12 @@ from routes.emissions import emissions_ns
 from models import register_models
 from auth import register_auth_routes
 import time
+from extensions import cache
 
 app = Flask(__name__)
+
+# Cache initialization
+cache.init_app(app)
 
 # Initialize Flask-RESTx
 authorizations = {
