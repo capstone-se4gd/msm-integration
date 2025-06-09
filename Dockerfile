@@ -27,7 +27,7 @@ RUN echo '#!/bin/bash' > /app/generate_env.sh && \
     chmod +x /app/generate_env.sh
 
 # Make port 8080 available to the world outside the container
-EXPOSE 8080
+EXPOSE $FLASK_RUN_PORT
 
 # Update entrypoint script to first generate the .env file and then run the app
 CMD ["/bin/bash", "-c", "/app/generate_env.sh && ./entrypoint.sh"]
